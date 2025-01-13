@@ -1,0 +1,166 @@
+using Scot.Massie.Events.Args;
+using Scot.Massie.Events.CallInfo;
+
+namespace Scot.Massie.Events;
+
+public class Event<TArgs> : IInvocableEvent<TArgs>
+    where TArgs : IEventArgs
+{
+    private readonly IList<(IInvocableEvent Event, Func<TArgs, IEventArgs> Converter)> 
+        _dependentEventsWithArgConverters = new List<(IInvocableEvent, Func<TArgs, IEventArgs>)>();
+    
+    private readonly ICollection<EventListener<TArgs>> _listeners = new HashSet<EventListener<TArgs>>();
+
+    private readonly object _lock = new();
+
+    public ICollection<EventListener<TArgs>> Listeners
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _listeners.ToList();
+            }
+        }
+    }
+
+    public ICollection<IInvocableEvent> DependentEvents
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _dependentEventsWithArgConverters.Select(x => x.Event).ToList();
+            }
+        }
+    }
+
+    public bool ListenerOrderMatters
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _dependentEventsWithArgConverters.Any(x => x.Event.ListenerOrderMatters);
+            }
+        }
+    }
+
+    public Event()
+    {
+        
+    }
+
+    public void Invoke(TArgs args)
+    {
+        IList<IEventListenerCallInfo> callableListeners;
+
+        lock(_lock)
+        {
+            var callInfo = GenerateCallInfo(args);
+
+            if(ListenerOrderMatters)
+                callInfo = callInfo.OrderBy(x => x.Priority ?? double.NegativeInfinity);
+
+            callableListeners = callInfo.ToList();
+        }
+
+        foreach(var callInfo in callableListeners)
+            callInfo.CallListener();
+    }
+
+    public void Register(EventListener listener)
+    {
+        Register(_ => listener());
+    }
+
+    public void Register(EventListener<TArgs> listener)
+    {
+        lock(_lock)
+        {
+            _listeners.Add(listener);
+        }
+    }
+
+    public void Register(IInvocableEvent<TArgs> dependentEvent)
+    {
+        Register(dependentEvent, x => x);
+    }
+
+    public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent,
+                                     Func<TArgs, TOtherArgs>     argConverter)
+        where TOtherArgs : IEventArgs
+    {
+        lock(_lock)
+        {
+            _dependentEventsWithArgConverters.Add((dependentEvent, x => argConverter(x)));
+        }
+    }
+
+    public void Deregister(EventListener<TArgs> listener)
+    {
+        lock(_lock)
+        {
+            _listeners.Remove(listener);
+        }
+    }
+
+    public void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
+        where TOtherArgs : IEventArgs
+    {
+        lock(_lock)
+        {
+            for(int i = 0; i < _dependentEventsWithArgConverters.Count; i++)
+                if(ReferenceEquals(dependentEvent, _dependentEventsWithArgConverters[i].Event))
+                    _dependentEventsWithArgConverters.RemoveAt(i);
+        }
+    }
+
+    public void ClearListeners()
+    {
+        lock(_lock)
+        {
+            _listeners.Clear();
+        }
+    }
+
+    public void ClearDependentEvents()
+    {
+        lock(_lock)
+        {
+            _dependentEventsWithArgConverters.Clear();
+        }
+    }
+
+    public void Clear()
+    {
+        lock(_lock)
+        {
+            ClearListeners();
+            ClearDependentEvents();
+        }
+    }
+
+    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents)
+    {
+        if(!alreadyInvolvedEvents.Add(this))
+            return Enumerable.Empty<IEventListenerCallInfo>();
+
+        lock(_lock)
+        {
+            var forThisEvent
+                = _listeners.Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args));
+
+            var forDependentEvents
+                = _dependentEventsWithArgConverters
+                   .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents));
+
+            return forThisEvent.Concat(forDependentEvents);
+        }
+    }
+
+    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args)
+    {
+        return GenerateCallInfo(args, new HashSet<IInvocableEvent>());
+    }
+}
