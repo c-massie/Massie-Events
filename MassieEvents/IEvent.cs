@@ -5,9 +5,6 @@ namespace Scot.Massie.Events;
 public interface IEvent
 {
     void Register(EventListener listener);
-    
-    void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
-        where TOtherArgs : IEventArgs;
 }
 
 public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
@@ -21,4 +18,7 @@ public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
         where TOtherArgs : IEventArgs;
 
     void Deregister(EventListener<TArgs> listener);
+    
+    void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
+        where TOtherArgs : IEventArgs;
 }

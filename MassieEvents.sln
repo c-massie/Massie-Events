@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassieEvents", "MassieEvents\MassieEvents.csproj", "{59371189-0E08-4F60-A4D6-49A185BEB78E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassieEventsTests", "MassieEventsTests\MassieEventsTests.csproj", "{EEB555A2-96E0-43BF-8F9D-40006F0F25BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{59371189-0E08-4F60-A4D6-49A185BEB78E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59371189-0E08-4F60-A4D6-49A185BEB78E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59371189-0E08-4F60-A4D6-49A185BEB78E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEB555A2-96E0-43BF-8F9D-40006F0F25BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEB555A2-96E0-43BF-8F9D-40006F0F25BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEB555A2-96E0-43BF-8F9D-40006F0F25BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEB555A2-96E0-43BF-8F9D-40006F0F25BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
