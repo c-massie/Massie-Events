@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using MassieEventsTests.Dummies;
@@ -413,6 +414,7 @@ public abstract class IInvocableEventTest
         e2Info.Should().ContainSingle(x => x is IEventListenerCallInfo<EventArgsWithInt>);
         e2Info.Should().ContainSingle(x => x is IEventListenerCallInfo<EventArgsWithString>);
         
+        // ReSharper disable InconsistentNaming
         var e1i1 = (IEventListenerCallInfo<EventArgsWithString>)e1Info
            .First(x => x is IEventListenerCallInfo<EventArgsWithString>);
         
@@ -424,6 +426,7 @@ public abstract class IInvocableEventTest
         
         var e2i2 = (IEventListenerCallInfo<EventArgsWithString>)e2Info
            .First(x => x is IEventListenerCallInfo<EventArgsWithString>);
+        // ReSharper enable InconsistentNaming
 
         e1i1.Args.Should().BeSameAs(a1);
         e1i1.Listener.Should().BeSameAs(l1);
@@ -440,5 +443,88 @@ public abstract class IInvocableEventTest
         e2i2.Args.MyString.Should().Be("13");
         e2i2.Listener.Should().BeSameAs(l1);
         e2i2.Priority.Should().BeNull();
+    }
+
+    [Fact]
+    public void Invoke_NoListeners()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        
+        e.Invoke(a);
+        
+        // Since invoke shouldn't do anything in this case, there's nothing to test; just making sure it actually runs.
+    }
+
+    [Fact]
+    public void Invoke_OneListener()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"));
+        e.Invoke(a);
+
+        l.Should().HaveCount(1);
+        l.Should().ContainSingle(x => x == "Noot");
+    }
+
+    [Fact]
+    public void Invoke_MultipleListeners()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"));
+        e.Register(_ => l.Add("Toot"));
+        e.Register(_ => l.Add("Boot"));
+        e.Invoke(a);
+
+        l.Should().HaveCount(3);
+        l.Should().ContainSingle(x => x == "Noot");
+        l.Should().ContainSingle(x => x == "Toot");
+        l.Should().ContainSingle(x => x == "Boot");
+    }
+
+    [Fact]
+    public void Invoke_OneDependentEvent()
+    {
+        var e1 = MakeEvent();
+        var e2 = MakeDifferentEvent();
+        var a  = new EventArgsWithString("7");
+        var l  = new List<string>();
+        
+        e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString)));
+        e1.Register(_ => l.Add("Noot"));
+        e2.Register(_ => l.Add("Toot"));
+        e1.Invoke(a);
+
+        l.Should().HaveCount(2);
+        l.Should().ContainSingle(x => x == "Noot");
+        l.Should().ContainSingle(x => x == "Toot");
+    }
+
+    [Fact]
+    public void Invoke_MultipleDependentEvents()
+    {
+        var e1 = MakeEvent();
+        var e2 = MakeDifferentEvent();
+        var e3 = MakeEvent();
+        var a  = new EventArgsWithString("7");
+        var l  = new List<string>();
+        
+        e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString) * 2));
+        e1.Register(e3, x => new EventArgsWithString($"{x.MyString}{x.MyString}"));
+        e1.Register(args => l.Add(args.MyString));
+        e2.Register(args => l.Add(args.MyInt.ToString()));
+        e3.Register(args => l.Add(args.MyString));
+        e1.Invoke(a);
+
+        l.Should().HaveCount(3);
+        l.Should().ContainSingle(x => x == "7");
+        l.Should().ContainSingle(x => x == "14");
+        l.Should().ContainSingle(x => x == "77");
     }
 }

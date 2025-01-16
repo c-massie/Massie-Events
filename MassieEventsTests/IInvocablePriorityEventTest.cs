@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using MassieEventsTests.Dummies;
@@ -20,7 +21,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
 
     public abstract override IInvocablePriorityEvent<EventArgsWithString> MakeEvent();
 
-    public abstract override IInvocableEvent<EventArgsWithInt> MakeDifferentEvent();
+    public abstract override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent();
 
     [Fact]
     public void RegisterListener_WithoutPriority()
@@ -199,5 +200,120 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         i2.Args.Should().Be(a);
         i3.Args.Should().Be(a);
         i4.Args.Should().Be(a);
+    }
+
+    [Fact]
+    public void Invoke_OneListenerWithPriority()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"), priority: 7);
+        e.Invoke(a);
+
+        l.Should().HaveCount(1);
+        l.Should().ContainSingle(x => x == "Noot");
+    }
+
+    [Fact]
+    public void Invoke_MultipleListenersWithPriority()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"), priority: 7);
+        e.Register(_ => l.Add("Toot"), priority: 7);
+        e.Register(_ => l.Add("Boot"), priority: 7);
+        e.Invoke(a);
+
+        l.Should().HaveCount(3);
+        l.Should().ContainSingle(x => x == "Noot");
+        l.Should().ContainSingle(x => x == "Toot");
+        l.Should().ContainSingle(x => x == "Boot");
+    }
+
+    [Fact]
+    public void Invoke_MultipleListenersWithPriorityInOrder()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"), priority: 7);
+        e.Register(_ => l.Add("Toot"), priority: 19);
+        e.Register(_ => l.Add("Boot"), priority: 3);
+        e.Invoke(a);
+
+        l.Should().HaveCount(3);
+        l[0].Should().Be("Boot");
+        l[1].Should().Be("Noot");
+        l[2].Should().Be("Toot");
+    }
+    
+    [Fact]
+    public void Invoke_ListenersWithNegativePriority()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"), priority: -7);
+        e.Register(_ => l.Add("Toot"), priority: 19);
+        e.Register(_ => l.Add("Hoot"), priority: -2);
+        e.Register(_ => l.Add("Boot"), priority: 3);
+        e.Invoke(a);
+
+        l.Should().HaveCount(4);
+        l[0].Should().Be("Noot");
+        l[1].Should().Be("Hoot");
+        l[2].Should().Be("Boot");
+        l[3].Should().Be("Toot");
+    }
+
+    [Fact]
+    public void Invoke_MixedListenersWithPriorityAndNoPriority()
+    {
+        var e = MakeEvent();
+        var a = new EventArgsWithString("Doot");
+        var l = new List<string>();
+        
+        e.Register(_ => l.Add("Noot"), priority: 7);
+        e.Register(_ => l.Add("Toot"), priority: 19);
+        e.Register(_ => l.Add("Boot"), priority: 3);
+        e.Invoke(a);
+
+        l.Should().HaveCount(3);
+        l[0].Should().Be("Boot");
+        l[1].Should().Be("Noot");
+        l[2].Should().Be("Toot");
+    }
+
+    [Fact]
+    public void Invoke_MixedListenersAndDependentEventsWithPriorityAndNoPriority()
+    {
+        var e1 = MakeEvent();
+        var e2 = MakeDifferentEvent();
+        var a  = new EventArgsWithString("7");
+        var l  = new List<string>();
+        
+        e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString)));
+        e1.Register(_ => l.Add("Noot"), 19);
+        e1.Register(_ => l.Add("Moot"));
+        e1.Register(_ => l.Add("Toot"), 3);
+        e2.Register(_ => l.Add("Boot"), 7);
+        e2.Register(_ => l.Add("Poot"));
+        e2.Register(_ => l.Add("Hoot"), 28);
+        e1.Invoke(a);
+
+        l.Should().HaveCount(6);
+        var firstTwo = l.Take(2).ToList();
+        firstTwo.Should().ContainSingle("Moot");
+        firstTwo.Should().ContainSingle("Poot");
+        l[2].Should().Be("Toot");
+        l[3].Should().Be("Boot");
+        l[4].Should().Be("Noot");
+        l[5].Should().Be("Hoot");
     }
 }
