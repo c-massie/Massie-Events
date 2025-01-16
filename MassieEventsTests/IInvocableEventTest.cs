@@ -296,9 +296,18 @@ public abstract class IInvocableEventTest
         info.Should().HaveCount(3);
         info.Should().AllSatisfy(x => x.Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>());
         var infoCasted = info.Select(x => (IEventListenerCallInfo<EventArgsWithString>)x).ToList();
-        infoCasted.Should().Contain(x => ReferenceEquals(x.Listener, l1) && ReferenceEquals(x.Args, a) && x.Priority == null);
-        infoCasted.Should().Contain(x => ReferenceEquals(x.Listener, l2) && ReferenceEquals(x.Args, a) && x.Priority == null);
-        infoCasted.Should().Contain(x => ReferenceEquals(x.Listener, l3) && ReferenceEquals(x.Args, a) && x.Priority == null);
+        infoCasted.Should().ContainSingle(x => ReferenceEquals(x.Listener, l1));
+        infoCasted.Should().ContainSingle(x => ReferenceEquals(x.Listener, l2));
+        infoCasted.Should().ContainSingle(x => ReferenceEquals(x.Listener, l3));
+        var i1 = infoCasted.First(x => ReferenceEquals(x.Listener, l1));
+        var i2 = infoCasted.First(x => ReferenceEquals(x.Listener, l2));
+        var i3 = infoCasted.First(x => ReferenceEquals(x.Listener, l3));
+        i1.Priority.Should().BeNull();
+        i2.Priority.Should().BeNull();
+        i3.Priority.Should().BeNull();
+        i1.Args.Should().Be(a);
+        i2.Args.Should().Be(a);
+        i3.Args.Should().Be(a);
     }
 
     [Fact]
