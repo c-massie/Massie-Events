@@ -3,6 +3,7 @@ using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
 
+/// <inheritdoc cref="IInvocableEvent{TArgs}"/>
 public class Event<TArgs> : IInvocableEvent<TArgs>
     where TArgs : IEventArgs
 {
@@ -11,6 +12,9 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
     
     private readonly ICollection<EventListener<TArgs>> _listeners = new HashSet<EventListener<TArgs>>();
 
+    /// <summary>
+    /// Threadsafe lock. All operations on this are in synchronisation with this lock.
+    /// </summary>
     private readonly object _lock = new();
 
     public ICollection<EventListener<TArgs>> Listeners
@@ -46,6 +50,9 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
         }
     }
 
+    /// <summary>
+    /// Creates a new event object.
+    /// </summary>
     public Event()
     {
         
