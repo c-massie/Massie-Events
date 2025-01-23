@@ -3,6 +3,7 @@ using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
 
+/// <inheritdoc cref="IInvocablePriorityEvent{TArgs}"/>
 public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     where TArgs : IEventArgs
 {
@@ -14,6 +15,9 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     private readonly ICollection<(EventListener<TArgs> Listener, double Priority)> _listenersWithPriority
         = new List<(EventListener<TArgs> Listener, double Priority)>();
     
+    /// <summary>
+    /// Threadsafe lock. All operations on this are in synchronisation with this lock.
+    /// </summary>
     private readonly object _lock = new();
     
     public ICollection<EventListener<TArgs>> Listeners
@@ -63,6 +67,9 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <summary>
+    /// Creates a new ordered event object.
+    /// </summary>
     public OrderedEvent()
     {
     }
