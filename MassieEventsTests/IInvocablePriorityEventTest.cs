@@ -60,7 +60,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
             listeners.Should().HaveCount(1);
             var listener = listeners.Single();
             listener.Listener.Should().BeSameAs(l);
-            listener.Listener.Should().Be(7);
+            listener.Priority.Should().Be(7);
         }
 
         {
@@ -131,7 +131,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         var i = (IEventListenerCallInfo<EventArgsWithString>)info[0];
         i.Args.Should().BeSameAs(a);
         i.Listener.Should().BeSameAs(l);
-        i.Priority.Should().BeNull();
+        i.Priority.Should().Be(7);
     }
 
     [Fact]
@@ -309,8 +309,8 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
 
         l.Should().HaveCount(6);
         var firstTwo = l.Take(2).ToList();
-        firstTwo.Should().ContainSingle("Moot");
-        firstTwo.Should().ContainSingle("Poot");
+        firstTwo.Should().Contain("Moot");
+        firstTwo.Should().Contain("Poot");
         l[2].Should().Be("Toot");
         l[3].Should().Be("Boot");
         l[4].Should().Be("Noot");
