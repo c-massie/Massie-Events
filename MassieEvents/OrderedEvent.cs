@@ -76,20 +76,13 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
     public void Invoke(TArgs args)
     {
-        IList<IEventListenerCallInfo> callableListeners;
+        var toCall = GenerateCallInfo(args);
 
-        lock(_lock)
-        {
-            var callInfo = GenerateCallInfo(args);
+        if(ListenerOrderMatters)
+            toCall = toCall.OrderBy(x => x.Priority ?? double.NegativeInfinity);
 
-            if(ListenerOrderMatters)
-                callInfo = callInfo.OrderBy(x => x.Priority ?? double.NegativeInfinity);
-
-            callableListeners = callInfo.ToList();
-        }
-
-        foreach(var callInfo in callableListeners)
-            callInfo.CallListener();
+        foreach(var c in toCall)
+            c.CallListener();
     }
 
     public void Register(EventListener listener)
@@ -189,18 +182,35 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         {
             var withPriority
                 = _listenersWithPriority
-                   .Select(IEventListenerCallInfo (x)
-                               => new EventListenerCallInfo<TArgs>(x.Listener, x.Priority, args));
+                 .Select(IEventListenerCallInfo (x)
+                             => new EventListenerCallInfo<TArgs>(x.Listener, x.Priority, args))
+                 .ToList();
 
             var withoutPriority
                 = _listenersWithoutPriority
-                   .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args));
+                 .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
+                 .ToList();
 
-            var forDependentEvents
-                = _dependentEventsWithArgConverters
-                   .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents));
+            var result = withPriority.Concat(withoutPriority);
 
-            return withPriority.Concat(withoutPriority).Concat(forDependentEvents);
+            if(_dependentEventsWithArgConverters.Count != 0)
+            {
+                var dependantsCallInfo
+                    = _dependentEventsWithArgConverters
+                     .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents))
+                     .ToList();
+                
+                // I considered having dependent events be enumerated over outwith the lock, since that could be done so
+                // thread-safely, but the call info wouldn't necessarily be reflective of a snapshot of this event; if
+                // dependent events would be added or removed from this or any dependent events (recursively) after the
+                // call info enumerable is produced but before it's used, the generated call info could include
+                // inconsistent call info. e.g. where "X" is a dependent event, it could include call info from an event
+                // dependent on "X", but not from "X" itself.
+
+                result = result.Concat(dependantsCallInfo);
+            }
+
+            return result;
         }
     }
 

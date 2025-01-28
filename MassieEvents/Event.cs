@@ -60,20 +60,13 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
 
     public void Invoke(TArgs args)
     {
-        IList<IEventListenerCallInfo> callableListeners;
+        var toCall = GenerateCallInfo(args);
 
-        lock(_lock)
-        {
-            var callInfo = GenerateCallInfo(args);
+        if(ListenerOrderMatters)
+            toCall = toCall.OrderBy(x => x.Priority ?? double.NegativeInfinity);
 
-            if(ListenerOrderMatters)
-                callInfo = callInfo.OrderBy(x => x.Priority ?? double.NegativeInfinity);
-
-            callableListeners = callInfo.ToList();
-        }
-
-        foreach(var callInfo in callableListeners)
-            callInfo.CallListener();
+        foreach(var c in toCall)
+            c.CallListener();
     }
 
     public void Register(EventListener listener)
@@ -155,14 +148,24 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
 
         lock(_lock)
         {
-            var forThisEvent
-                = _listeners.Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args));
+            IEnumerable<IEventListenerCallInfo> result
+                = _listeners
+                 .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
+                 .ToList();
 
-            var forDependentEvents
-                = _dependentEventsWithArgConverters
-                   .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents));
+            if(_dependentEventsWithArgConverters.Count != 0)
+            {
+                var forDependentEvents
+                    = _dependentEventsWithArgConverters
+                     .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents))
+                     .ToList();
+                
+                // See the note in the same method in OrderedEvent.
+                
+                result = result.Concat(forDependentEvents);
+            }
 
-            return forThisEvent.Concat(forDependentEvents);
+            return result;
         }
     }
 
