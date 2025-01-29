@@ -20,7 +20,7 @@ namespace Scot.Massie.Events;
 /// </remarks>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;();
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
 ///  
 /// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
 /// </code>
@@ -111,6 +111,52 @@ public interface IInvocableEvent : IEvent
     /// event is expected to call them in a particular order.
     /// </returns>
     IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs args);
+
+    /// <summary>
+    /// Produces an enumerable of the event listeners registered to this event and all dependent events, paired with the
+    /// event args object being passed to them (as this may be different for listeners if they're directly registered to
+    /// different events) and the listener's priority.
+    /// </summary>
+    /// <param name="args">
+    /// The event args object to pass to listeners, and which will be used to produce the event args object for
+    /// dependent events if required.
+    /// </param>
+    /// <param name="alreadyInvolvedEvents">
+    /// A set containing the events that have already produced call info as a result of this event invocation; these
+    /// events shall not have additional call info requested of them. This allows circular dependency and co-dependency
+    /// of events.
+    /// </param>
+    /// <param name="listenerOrderMatters">
+    /// Output parameter indicating whether the listeners specifically need to be called in order of priority.
+    /// </param>
+    /// <returns>
+    /// An enumerable of the event listeners registered to this event and all dependent events, paired with the event
+    /// args object being passed to them (as this may be different for listeners if they're directly registered to
+    /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
+    /// event is expected to call them in a particular order.
+    /// </returns>
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs            args,
+                                                         ISet<IInvocableEvent> alreadyInvolvedEvents,
+                                                         out bool              listenerOrderMatters);
+    /// <summary>
+    /// Produces an enumerable of the event listeners registered to this event and all dependent events, paired with the
+    /// event args object being passed to them (as this may be different for listeners if they're directly registered to
+    /// different events) and the listener's priority.
+    /// </summary>
+    /// <param name="args">
+    /// The event args object to pass to listeners, and which will be used to produce the event args object for
+    /// dependent events if required.
+    /// </param>
+    /// <param name="listenerOrderMatters">
+    /// Output parameter indicating whether the listeners specifically need to be called in order of priority.
+    /// </param>
+    /// <returns>
+    /// An enumerable of the event listeners registered to this event and all dependent events, paired with the event
+    /// args object being passed to them (as this may be different for listeners if they're directly registered to
+    /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
+    /// event is expected to call them in a particular order.
+    /// </returns>
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs args, out bool listenerOrderMatters);
 }
 
 /// <summary>
@@ -128,7 +174,7 @@ public interface IInvocableEvent : IEvent
 /// </typeparam>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;();
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
 ///  
 /// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
 /// </code>
@@ -172,5 +218,24 @@ public interface IInvocableEvent<TArgs> : IInvocableEvent, IEvent<TArgs>
     IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args)
     {
         return GenerateCallInfo((TArgs)args);
+    }
+
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs,System.Collections.Generic.ISet{Scot.Massie.Events.IInvocableEvent},out bool)"/>
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(
+        TArgs                 args,
+        ISet<IInvocableEvent> alreadyInvolvedEvents,
+        out bool              listenerOrderMatters);
+    
+    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents, out bool listenerOrderMatters)
+    {
+        return GenerateCallInfo((TArgs)args, alreadyInvolvedEvents, out listenerOrderMatters);
+    }
+
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs,out bool)"/>
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters);
+    
+    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args, out bool listenerOrderMatters)
+    {
+        return GenerateCallInfo((TArgs)args, out listenerOrderMatters);
     }
 }

@@ -76,9 +76,9 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
     public void Invoke(TArgs args)
     {
-        var toCall = GenerateCallInfo(args);
+        var toCall = GenerateCallInfo(args, out var listenerOrderMatters);
 
-        if(ListenerOrderMatters)
+        if(listenerOrderMatters)
             toCall = toCall.OrderBy(x => x.Priority ?? double.NegativeInfinity);
 
         foreach(var c in toCall)
@@ -175,6 +175,20 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents)
     {
+        return GenerateCallInfo(args, alreadyInvolvedEvents, out _);
+    }
+
+    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args)
+    {
+        return GenerateCallInfo(args, new HashSet<IInvocableEvent>());
+    }
+
+    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs                 args,
+                                                                ISet<IInvocableEvent> alreadyInvolvedEvents,
+                                                                out bool              listenerOrderMatters)
+    {
+        listenerOrderMatters = false;
+
         if(!alreadyInvolvedEvents.Add(this))
             return Enumerable.Empty<IEventListenerCallInfo>();
 
@@ -186,6 +200,9 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
                              => new EventListenerCallInfo<TArgs>(x.Listener, x.Priority, args))
                  .ToList();
 
+            if(withPriority.Count != 0)
+                listenerOrderMatters = true;
+
             var withoutPriority
                 = _listenersWithoutPriority
                  .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
@@ -195,11 +212,18 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
             if(_dependentEventsWithArgConverters.Count != 0)
             {
-                var dependantsCallInfo
-                    = _dependentEventsWithArgConverters
-                     .SelectMany(x => x.Event.GenerateCallInfo(x.Converter(args), alreadyInvolvedEvents))
-                     .ToList();
-                
+                var forDependentEvents = new List<IEventListenerCallInfo>();
+
+                foreach(var dep in _dependentEventsWithArgConverters)
+                {
+                    forDependentEvents.AddRange(dep.Event.GenerateCallInfo(dep.Converter(args),
+                                                                           alreadyInvolvedEvents,
+                                                                           out var depOrderMatters));
+
+                    if(depOrderMatters)
+                        listenerOrderMatters = true;
+                }
+
                 // I considered having dependent events be enumerated over outwith the lock, since that could be done so
                 // thread-safely, but the call info wouldn't necessarily be reflective of a snapshot of this event; if
                 // dependent events would be added or removed from this or any dependent events (recursively) after the
@@ -207,15 +231,15 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
                 // inconsistent call info. e.g. where "X" is a dependent event, it could include call info from an event
                 // dependent on "X", but not from "X" itself.
 
-                result = result.Concat(dependantsCallInfo);
+                result = result.Concat(forDependentEvents);
             }
 
             return result;
         }
     }
 
-    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args)
+    public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters)
     {
-        return GenerateCallInfo(args, new HashSet<IInvocableEvent>());
+        return GenerateCallInfo(args, new HashSet<IInvocableEvent>(), out listenerOrderMatters);
     }
 }
