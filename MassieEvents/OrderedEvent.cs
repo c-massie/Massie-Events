@@ -192,6 +192,9 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         if(!alreadyInvolvedEvents.Add(this))
             return Enumerable.Empty<IEventListenerCallInfo>();
 
+        IList<(IInvocableEvent Event, Func<TArgs, IEventArgs> Converter)>? dependentEventsWithArgConverters = null;
+        IEnumerable<IEventListenerCallInfo> result;
+
         lock(_lock)
         {
             var withPriority
@@ -208,34 +211,30 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
                  .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
                  .ToList();
 
-            var result = withPriority.Concat(withoutPriority);
+            result = withPriority.Concat(withoutPriority);
 
             if(_dependentEventsWithArgConverters.Count != 0)
+                dependentEventsWithArgConverters = _dependentEventsWithArgConverters.ToList();
+        }
+
+        if(dependentEventsWithArgConverters is not null)
+        {
+            var forDependentEvents = new List<IEventListenerCallInfo>();
+
+            foreach(var (ev, converter) in dependentEventsWithArgConverters)
             {
-                var forDependentEvents = new List<IEventListenerCallInfo>();
+                forDependentEvents.AddRange(ev.GenerateCallInfo(converter(args),
+                                                                alreadyInvolvedEvents,
+                                                                out var depEvListenerOrderMatters));
 
-                foreach(var dep in _dependentEventsWithArgConverters)
-                {
-                    forDependentEvents.AddRange(dep.Event.GenerateCallInfo(dep.Converter(args),
-                                                                           alreadyInvolvedEvents,
-                                                                           out var depOrderMatters));
-
-                    if(depOrderMatters)
-                        listenerOrderMatters = true;
-                }
-
-                // I considered having dependent events be enumerated over outwith the lock, since that could be done so
-                // thread-safely, but the call info wouldn't necessarily be reflective of a snapshot of this event; if
-                // dependent events would be added or removed from this or any dependent events (recursively) after the
-                // call info enumerable is produced but before it's used, the generated call info could include
-                // inconsistent call info. e.g. where "X" is a dependent event, it could include call info from an event
-                // dependent on "X", but not from "X" itself.
-
-                result = result.Concat(forDependentEvents);
+                if(depEvListenerOrderMatters)
+                    listenerOrderMatters = true;
             }
 
-            return result;
+            result = result.Concat(forDependentEvents);
         }
+
+        return result;
     }
 
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters)

@@ -159,35 +159,38 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
         
         if(!alreadyInvolvedEvents.Add(this))
             return Enumerable.Empty<IEventListenerCallInfo>();
+        
+        IList<(IInvocableEvent Event, Func<TArgs, IEventArgs> Converter)>? dependentEventsWithArgConverters = null;
+        IEnumerable<IEventListenerCallInfo> result;
 
         lock(_lock)
         {
-            IEnumerable<IEventListenerCallInfo> result
-                = _listeners
-                 .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
-                 .ToList();
-
+            result = _listeners
+                    .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
+                    .ToList();
+            
             if(_dependentEventsWithArgConverters.Count != 0)
+                dependentEventsWithArgConverters = _dependentEventsWithArgConverters.ToList();
+        }
+
+        if(dependentEventsWithArgConverters is not null)
+        {
+            var forDependentEvents = new List<IEventListenerCallInfo>();
+            
+            foreach(var (ev, converter) in dependentEventsWithArgConverters)
             {
-                var forDependentEvents = new List<IEventListenerCallInfo>();
-
-                foreach(var dep in _dependentEventsWithArgConverters)
-                {
-                    forDependentEvents.AddRange(dep.Event.GenerateCallInfo(dep.Converter(args),
-                                                                           alreadyInvolvedEvents,
-                                                                           out var depOrderMatters));
-
-                    if(depOrderMatters)
-                        listenerOrderMatters = true;
-                }
+                forDependentEvents.AddRange(ev.GenerateCallInfo(converter(args),
+                                                                alreadyInvolvedEvents,
+                                                                out var depEvListenerOrderMatters));
                 
-                // See the note in the same method in OrderedEvent.
-                
-                result = result.Concat(forDependentEvents);
+                if(depEvListenerOrderMatters)
+                    listenerOrderMatters = true;
             }
 
-            return result;
+            result = result.Concat(forDependentEvents);
         }
+
+        return result;
     }
 
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters)
