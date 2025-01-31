@@ -3,9 +3,22 @@ using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
 
+/// <summary>
+/// Utility static class for static methods pertaining to events.
+/// </summary>
 public static class Events
 {
-    public static void InvokeMultiple(params (IInvocableEvent Event, IEventArgs Args)[] toInvoke)
+    /// <summary>
+    /// Invokes multiple events together at the same time. Each event is passed its own IEventArgs object, which may be
+    /// used to generate the IEventArgs objects passed to any dependent events.
+    ///
+    /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
+    /// event B are invoked together with this static method, and event A has a listener with a higher priority than
+    /// event B's listener, and a listener with a lower priority than event B's listener, then event A's lower priority
+    /// listener will be called first, followed by event B's listener, followed by event A's higher priority listener.
+    /// </summary>
+    /// <param name="toInvoke">The events to invoke, along with their respective event args objects.</param>
+    public static void InvokeMultiple(IEnumerable<(IInvocableEvent Event, IEventArgs Args)> toInvoke)
     {
         var callInfo             = Enumerable.Empty<IEventListenerCallInfo>();
         var listenerOrderMatters = false;
@@ -22,4 +35,21 @@ public static class Events
         foreach(var c in callInfo)
             c.CallListener();
     }
+    
+    /// <summary>
+    /// Invokes multiple events together at the same time. Each event is passed its own IEventArgs object, which may be
+    /// used to generate the IEventArgs objects passed to any dependent events.
+    ///
+    /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
+    /// event B are invoked together with this static method, and event A has a listener with a higher priority than
+    /// event B's listener, and a listener with a lower priority than event B's listener, then event A's lower priority
+    /// listener will be called first, followed by event B's listener, followed by event A's higher priority listener.
+    /// </summary>
+    /// <param name="toInvoke">The events to invoke, along with their respective event args objects.</param>
+    public static void InvokeMultiple(params (IInvocableEvent Event, IEventArgs Args)[] toInvoke)
+    {
+        InvokeMultiple((IEnumerable<(IInvocableEvent, IEventArgs)>)toInvoke);
+    }
+
+    
 }
