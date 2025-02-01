@@ -28,6 +28,8 @@ public abstract class IInvocableEventTest
 
     public abstract IInvocableEvent<EventArgsWithInt> MakeDifferentEvent();
 
+    public abstract IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority();
+
     [Fact]
     public void RegisterListener_Single()
     {
@@ -257,9 +259,10 @@ public abstract class IInvocableEventTest
         var e = MakeEvent();
         var a = new EventArgsWithString("Doot");
 
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().BeEmpty();
+        orderMatters.Should().BeFalse();
     }
 
     [Fact]
@@ -270,7 +273,7 @@ public abstract class IInvocableEventTest
         EventListener<EventArgsWithString>   l = _ => { };
 
         e.Register(l);
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(1);
         info[0].Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>();
@@ -278,6 +281,7 @@ public abstract class IInvocableEventTest
         i.Args.Should().BeSameAs(a);
         i.Listener.Should().BeSameAs(l);
         i.Priority.Should().BeNull();
+        orderMatters.Should().BeFalse();
     }
 
     [Fact]
@@ -292,7 +296,7 @@ public abstract class IInvocableEventTest
         e.Register(l1);
         e.Register(l2);
         e.Register(l3);
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(3);
         info.Should().AllSatisfy(x => x.Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>());
@@ -309,6 +313,7 @@ public abstract class IInvocableEventTest
         i1.Args.Should().Be(a);
         i2.Args.Should().Be(a);
         i3.Args.Should().Be(a);
+        orderMatters.Should().BeFalse();
     }
 
     [Fact]
@@ -323,7 +328,7 @@ public abstract class IInvocableEventTest
         e1.Register(l1);
         e2.Register(l2);
         e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString)));
-        var info = e1.GenerateCallInfo(a).ToList();
+        var info = e1.GenerateCallInfo(a, out var orderMatters).ToList();
 
         
         info.Should().HaveCount(2);
@@ -342,6 +347,7 @@ public abstract class IInvocableEventTest
         i2.Listener.Should().BeSameAs(l2);
         i2.Args.MyInt.Should().Be(7);
         i2.Priority.Should().BeNull();
+        orderMatters.Should().BeFalse();
     }
 
     [Fact]
@@ -360,7 +366,7 @@ public abstract class IInvocableEventTest
         e3.Register(l3);
         e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString)));
         e1.Register(e3, x => new EventArgsWithString($"{x.MyString}{x.MyString}"));
-        var info = e1.GenerateCallInfo(a).ToList();
+        var info = e1.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(3);
         
@@ -388,6 +394,8 @@ public abstract class IInvocableEventTest
         i1.Priority.Should().BeNull();
         i2.Priority.Should().BeNull();
         i3.Priority.Should().BeNull();
+
+        orderMatters.Should().BeFalse();
     }
 
     [Fact]
@@ -404,8 +412,8 @@ public abstract class IInvocableEventTest
         e2.Register(l2);
         e1.Register(e2, x => new EventArgsWithInt(int.Parse(x.MyString)));
         e2.Register(e1, x => new EventArgsWithString(x.MyInt.ToString()));
-        var e1Info = e1.GenerateCallInfo(a1).ToList();
-        var e2Info = e2.GenerateCallInfo(a2).ToList();
+        var e1Info = e1.GenerateCallInfo(a1, out var e1OrderMatters).ToList();
+        var e2Info = e2.GenerateCallInfo(a2, out var e2OrderMatters).ToList();
 
         e1Info.Should().HaveCount(2);
         e2Info.Should().HaveCount(2);
@@ -443,9 +451,72 @@ public abstract class IInvocableEventTest
         e2i2.Args.MyString.Should().Be("13");
         e2i2.Listener.Should().BeSameAs(l1);
         e2i2.Priority.Should().BeNull();
+
+        e1OrderMatters.Should().BeFalse();
+        e2OrderMatters.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GenerateCallInfo_DependentEventWithPriority_NoListeners()
+    {
+        IInvocableEvent<EventArgsWithString>         e1 = MakeEvent();
+        IInvocablePriorityEvent<EventArgsWithString> e2 = MakeDifferentEventWithPriority();
+        EventArgsWithString                          a  = new EventArgsWithString("7");
+        
+        e1.Register(e2);
+        var info = e1.GenerateCallInfo(a, out var orderMatters).ToList();
+
+        info.Should().BeEmpty();
+        orderMatters.Should().BeFalse();
     }
     
-    // TO DO: Add tests for making sure that whether listener order matters is reported correctly by GenerateCallInfo.
+    [Fact]
+    public void GenerateCallInfo_DependentEventWithPriority_ListenerWithoutPriority()
+    {
+        IInvocableEvent<EventArgsWithString>         e1 = MakeEvent();
+        IInvocablePriorityEvent<EventArgsWithString> e2 = MakeDifferentEventWithPriority();
+        EventListener<EventArgsWithString>           l  = _ => { Console.Out.WriteLine("Doot"); };
+        EventArgsWithString                          a  = new EventArgsWithString("7");
+        
+        e2.Register(l);
+        e1.Register(e2);
+        var info = e1.GenerateCallInfo(a, out var orderMatters).ToList();
+
+        info.Should().HaveCount(1);
+        info.Should().Contain(x => x is IEventListenerCallInfo<EventArgsWithString>);
+        
+        var i = (IEventListenerCallInfo<EventArgsWithString>)info
+           .First(x => x is IEventListenerCallInfo<EventArgsWithString>);
+
+        i.Listener.Should().BeSameAs(l);
+        i.Args.Should().BeSameAs(a);
+        i.Priority.Should().BeNull();
+        orderMatters.Should().BeFalse();
+    }
+    
+    [Fact]
+    public void GenerateCallInfo_DependentEventWithPriority_ListenerWithPriority()
+    {
+        IInvocableEvent<EventArgsWithString>         e1 = MakeEvent();
+        IInvocablePriorityEvent<EventArgsWithString> e2 = MakeDifferentEventWithPriority();
+        EventListener<EventArgsWithString>           l  = _ => { Console.Out.WriteLine("Doot"); };
+        EventArgsWithString                          a  = new EventArgsWithString("7");
+        
+        e2.Register(l, 7);
+        e1.Register(e2);
+        var info = e1.GenerateCallInfo(a, out var orderMatters).ToList();
+
+        info.Should().HaveCount(1);
+        info.Should().Contain(x => x is IEventListenerCallInfo<EventArgsWithString>);
+        
+        var i = (IEventListenerCallInfo<EventArgsWithString>)info
+           .First(x => x is IEventListenerCallInfo<EventArgsWithString>);
+
+        i.Listener.Should().BeSameAs(l);
+        i.Args.Should().BeSameAs(a);
+        i.Priority.Should().Be(7);
+        orderMatters.Should().BeTrue();
+    }
     
     [Fact]
     public void Invoke_NoListeners()

@@ -21,5 +21,10 @@ public class OrderedEventTest : IInvocablePriorityEventTest
     {
         return new OrderedEvent<EventArgsWithInt>();
     }
+
+    public override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
+    {
+        return new OrderedEvent<EventArgsWithString>();
+    }
 }
 

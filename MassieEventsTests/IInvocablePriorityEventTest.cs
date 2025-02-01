@@ -124,7 +124,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         EventListener<EventArgsWithString>           l = _ => { };
 
         e.Register(l, 7);
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(1);
         info[0].Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>();
@@ -132,6 +132,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         i.Args.Should().BeSameAs(a);
         i.Listener.Should().BeSameAs(l);
         i.Priority.Should().Be(7);
+        orderMatters.Should().BeTrue();
     }
 
     [Fact]
@@ -146,7 +147,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         e.Register(l1, 7);
         e.Register(l2, 21);
         e.Register(l3, 3);
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(3);
         info.Should().AllSatisfy(x => x.Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>());
@@ -163,6 +164,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         i1.Args.Should().Be(a);
         i2.Args.Should().Be(a);
         i3.Args.Should().Be(a);
+        orderMatters.Should().BeTrue();
     }
 
     [Fact]
@@ -179,7 +181,7 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         e.Register(l2);
         e.Register(l3, 3);
         e.Register(l4);
-        var info = e.GenerateCallInfo(a).ToList();
+        var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
 
         info.Should().HaveCount(4);
         info.Should().AllSatisfy(x => x.Should().BeAssignableTo<IEventListenerCallInfo<EventArgsWithString>>());
@@ -200,9 +202,8 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         i2.Args.Should().Be(a);
         i3.Args.Should().Be(a);
         i4.Args.Should().Be(a);
+        orderMatters.Should().BeTrue();
     }
-
-    // TO DO: Add tests for making sure that whether listener order matters is reported correctly by GenerateCallInfo.
     
     [Fact]
     public void Invoke_OneListenerWithPriority()
