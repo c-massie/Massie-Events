@@ -74,6 +74,16 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     {
     }
 
+    ProtectedEvent<TArgs> IInvocableEvent<TArgs>.Protected()
+    {
+        return new ProtectedEvent<TArgs>(this);
+    }
+
+    ProtectedPriorityEvent<TArgs> IInvocablePriorityEvent<TArgs>.Protected()
+    {
+        return new ProtectedPriorityEvent<TArgs>(this);
+    }
+
     public void Invoke(TArgs args)
     {
         var toCall = GenerateCallInfo(args, out var listenerOrderMatters);

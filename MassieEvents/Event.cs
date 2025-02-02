@@ -58,6 +58,11 @@ public class Event<TArgs> : IInvocableEvent<TArgs>
         
     }
 
+    public ProtectedEvent<TArgs> Protected()
+    {
+        return new ProtectedEvent<TArgs>(this);
+    }
+
     public void Invoke(TArgs args)
     {
         var toCall = GenerateCallInfo(args, out var listenerOrderMatters);

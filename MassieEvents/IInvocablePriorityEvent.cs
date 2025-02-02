@@ -39,4 +39,10 @@ public interface IInvocablePriorityEvent<TArgs> : IInvocableEvent<TArgs>, IPrior
     /// specifying a priority, it will appear in this list with a priority of null.
     /// </summary>
     IList<(EventListener<TArgs> Listener, double? Priority)> ListenersWithPriorities { get; }
+    
+    /// <summary>
+    /// Provides this event, wrapped in a new <see cref="ProtectedPriorityEvent{TArgs}"/> instance.
+    /// </summary>
+    /// <returns>A new instance of <see cref="ProtectedPriorityEvent{TArgs}"/> wrapping this event.</returns>
+    new ProtectedPriorityEvent<TArgs> Protected();
 }

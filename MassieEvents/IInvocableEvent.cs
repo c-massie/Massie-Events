@@ -193,6 +193,12 @@ public interface IInvocableEvent<TArgs> : IInvocableEvent, IEvent<TArgs>
 
     IEnumerable IInvocableEvent.Listeners => Listeners;
 
+    /// <summary>
+    /// Provides this event, wrapped in a new <see cref="ProtectedEvent{TArgs}"/> instance.
+    /// </summary>
+    /// <returns>A new instance of <see cref="ProtectedEvent{TArgs}"/> wrapping this event.</returns>
+    ProtectedEvent<TArgs> Protected();
+
     /// <inheritdoc cref="IInvocableEvent.Invoke"/>
     void Invoke(TArgs args);
 
