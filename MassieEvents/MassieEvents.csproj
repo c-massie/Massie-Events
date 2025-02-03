@@ -5,6 +5,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Scot.Massie.Events</RootNamespace>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>0.1</Version>
+        <Authors>Chris Massie</Authors>
+        <Description>Object-oriented event system with support for priority and cascading event invocation.</Description>
+        <PackageProjectUrl>https://github.com/c-massie/Massie-Events</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/c-massie/Massie-Events/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/c-massie/Massie-Events</RepositoryUrl>
+        <PackageTags>event, events, object-oriented, C#, .NET, cascading events, events with priority, priority events</PackageTags>
     </PropertyGroup>
 
 </Project>
