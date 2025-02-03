@@ -13,6 +13,9 @@
         <PackageLicenseUrl>https://github.com/c-massie/Massie-Events/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/c-massie/Massie-Events</RepositoryUrl>
         <PackageTags>event, events, object-oriented, C#, .NET, cascading events, events with priority, priority events</PackageTags>
+        <PackageId>Scot.Massie.Events</PackageId>
+        <Title>Massie Events</Title>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
 </Project>
