@@ -1,5 +1,3 @@
-using Scot.Massie.Events.Args;
-
 namespace Scot.Massie.Events;
 
 /// <summary>
@@ -15,7 +13,7 @@ namespace Scot.Massie.Events;
 /// a sound playing might include fields in the event args object relating to which sound, or the volume.
 /// </typeparam>
 public class ProtectedEvent<TArgs> : IEvent<TArgs> 
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     private readonly IEvent<TArgs> _inner;
 
@@ -48,14 +46,14 @@ public class ProtectedEvent<TArgs> : IEvent<TArgs>
 
     /// <inheritdoc />
     public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent, Func<TArgs, TOtherArgs> argConverter)
-        where TOtherArgs : IEventArgs
+        where TOtherArgs : EventArgs
     {
         _inner.Register(dependentEvent, argConverter);
     }
 
     /// <inheritdoc />
     public void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
-        where TOtherArgs : IEventArgs
+        where TOtherArgs : EventArgs
     {
         _inner.Deregister(dependentEvent);
     }

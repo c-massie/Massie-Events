@@ -10,7 +10,7 @@ public interface IEventListenerCallInfo
 }
 
 public interface IEventListenerCallInfo<TArgs> : IEventListenerCallInfo
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     public EventListener<TArgs> Listener { get; }
 

@@ -16,7 +16,7 @@ namespace Scot.Massie.Events.Args;
 /// }
 /// </code>
 /// </example>
-public interface ICancellableEventArgs : IEventArgs
+public interface ICancellableEventArgs
 {
     /// <summary>
     /// Whether the event is cancelled. If false, the thing will happen as expected. If true, the thing shouldn't

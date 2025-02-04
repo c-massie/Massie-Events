@@ -1,8 +1,8 @@
-using Scot.Massie.Events.Args;
+using System;
 
 namespace MassieEventsTests.Dummies;
 
-public class EventArgsWithString : IEventArgs
+public class EventArgsWithString : EventArgs
 {
     public string MyString { get; }
     

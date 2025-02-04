@@ -1,14 +1,13 @@
-using Scot.Massie.Events.Args;
 using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
 
 /// <inheritdoc cref="IInvocablePriorityEvent{TArgs}"/>
 public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
-    private readonly IList<(IInvocableEvent Event, Func<TArgs, IEventArgs> Converter)> 
-        _dependentEventsWithArgConverters = new List<(IInvocableEvent, Func<TArgs, IEventArgs>)>();
+    private readonly IList<(IInvocableEvent Event, Func<TArgs, EventArgs> Converter)> 
+        _dependentEventsWithArgConverters = new List<(IInvocableEvent, Func<TArgs, EventArgs>)>();
     
     private readonly ICollection<EventListener<TArgs>> _listenersWithoutPriority = new HashSet<EventListener<TArgs>>();
 
@@ -138,11 +137,11 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
     /// <inheritdoc />
     public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent, Func<TArgs, TOtherArgs> argConverter)
-        where TOtherArgs : IEventArgs
+        where TOtherArgs : EventArgs
     {
         lock(_lock)
         {
-            _dependentEventsWithArgConverters.Add((dependentEvent, x => argConverter(x)));
+            _dependentEventsWithArgConverters.Add((dependentEvent, argConverter));
         }
     }
 
@@ -160,7 +159,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
 
     /// <inheritdoc />
     public void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
-        where TOtherArgs : IEventArgs
+        where TOtherArgs : EventArgs
     {
         lock(_lock)
         {
@@ -221,7 +220,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         if(!alreadyInvolvedEvents.Add(this))
             return Enumerable.Empty<IEventListenerCallInfo>();
 
-        IList<(IInvocableEvent Event, Func<TArgs, IEventArgs> Converter)>? dependentEventsWithArgConverters = null;
+        IList<(IInvocableEvent Event, Func<TArgs, EventArgs> Converter)>? dependentEventsWithArgConverters = null;
         IEnumerable<IEventListenerCallInfo> result;
 
         lock(_lock)

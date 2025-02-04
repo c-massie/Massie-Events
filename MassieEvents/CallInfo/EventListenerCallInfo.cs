@@ -3,7 +3,7 @@ using Scot.Massie.Events.Args;
 namespace Scot.Massie.Events.CallInfo;
 
 public class EventListenerCallInfo<TArgs> : IEventListenerCallInfo<TArgs>
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     public EventListener<TArgs> Listener { get; }
 

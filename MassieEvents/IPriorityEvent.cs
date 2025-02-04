@@ -1,5 +1,3 @@
-using Scot.Massie.Events.Args;
-
 namespace Scot.Massie.Events;
 
 /// <summary>
@@ -31,7 +29,7 @@ namespace Scot.Massie.Events;
 /// </code>
 /// </example>
 public interface IPriorityEvent<TArgs> : IEvent<TArgs>
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     /// <summary>
     /// Registers a listener to this event, with an associated priority. When this event happens, the listener will be

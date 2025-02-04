@@ -1,5 +1,3 @@
-using Scot.Massie.Events.Args;
-
 namespace Scot.Massie.Events;
 
 /// <summary>
@@ -32,7 +30,7 @@ namespace Scot.Massie.Events;
 /// </code>
 /// </example>
 public interface IInvocablePriorityEvent<TArgs> : IInvocableEvent<TArgs>, IPriorityEvent<TArgs>
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     /// <summary>
     /// The listeners registered to this event, paired with their priorities. Where a listener was registered without

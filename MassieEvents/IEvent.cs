@@ -1,5 +1,3 @@
-using Scot.Massie.Events.Args;
-
 namespace Scot.Massie.Events;
 
 /// <summary>
@@ -59,7 +57,7 @@ public interface IEvent
 /// ThingHappened.Register(eventArgs => Console.Out.WriteLine("Thing happened!"));
 /// </code>
 /// </example>
-public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
+public interface IEvent<TArgs> : IEvent where TArgs : EventArgs
 {
     /// <summary>
     /// Registers a listener to this event. When this event happens, the listener will be called.
@@ -98,7 +96,7 @@ public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
     /// <typeparam name="TOtherArgs">The type of the other event args.</typeparam>
     void Register<TOtherArgs>(IInvocableEvent<TOtherArgs>  dependentEvent,
                               Func<TArgs, TOtherArgs> argConverter)
-        where TOtherArgs : IEventArgs;
+        where TOtherArgs : EventArgs;
 
     /// <summary>
     /// Deregisters a listener from this event. It will no longer be called when this event is invoked.
@@ -112,5 +110,5 @@ public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
     /// <param name="dependentEvent">The event to deregister.</param>
     /// <typeparam name="TOtherArgs">The type of the other event's event args.</typeparam>
     void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
-        where TOtherArgs : IEventArgs;
+        where TOtherArgs : EventArgs;
 }

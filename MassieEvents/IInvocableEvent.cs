@@ -1,5 +1,4 @@
 using System.Collections;
-using Scot.Massie.Events.Args;
 using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
@@ -53,7 +52,7 @@ public interface IInvocableEvent : IEvent
     /// Calls all listeners of this event, and invoked all dependent events.
     /// </summary>
     /// <param name="args">The event args object to pass to listeners.</param>
-    void Invoke(IEventArgs args);
+    void Invoke(EventArgs args);
     
     /// <summary>
     /// Removes all listeners registered to this event; after calling, there will be no listeners registered directly to
@@ -93,7 +92,7 @@ public interface IInvocableEvent : IEvent
     /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
     /// event is expected to call them in a particular order.
     /// </returns>
-    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents);
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(EventArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents);
     
     /// <summary>
     /// Produces an enumerable of the event listeners registered to this event and all dependent events, paired with the
@@ -110,7 +109,7 @@ public interface IInvocableEvent : IEvent
     /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
     /// event is expected to call them in a particular order.
     /// </returns>
-    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs args);
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(EventArgs args);
 
     /// <summary>
     /// Produces an enumerable of the event listeners registered to this event and all dependent events, paired with the
@@ -135,7 +134,7 @@ public interface IInvocableEvent : IEvent
     /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
     /// event is expected to call them in a particular order.
     /// </returns>
-    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs            args,
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(EventArgs             args,
                                                          ISet<IInvocableEvent> alreadyInvolvedEvents,
                                                          out bool              listenerOrderMatters);
     /// <summary>
@@ -156,7 +155,7 @@ public interface IInvocableEvent : IEvent
     /// different events) and the listener's priority. This is not necessarily in any particular order, even if this
     /// event is expected to call them in a particular order.
     /// </returns>
-    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(IEventArgs args, out bool listenerOrderMatters);
+    IEnumerable<IEventListenerCallInfo> GenerateCallInfo(EventArgs args, out bool listenerOrderMatters);
 }
 
 /// <summary>
@@ -186,7 +185,7 @@ public interface IInvocableEvent : IEvent
 /// </code>
 /// </example>
 public interface IInvocableEvent<TArgs> : IInvocableEvent, IEvent<TArgs>
-    where TArgs : IEventArgs
+    where TArgs : EventArgs
 {
     /// <inheritdoc cref="IInvocableEvent.Listeners"/>
     new ICollection<EventListener<TArgs>> Listeners { get; }
@@ -202,45 +201,47 @@ public interface IInvocableEvent<TArgs> : IInvocableEvent, IEvent<TArgs>
     /// <inheritdoc cref="IInvocableEvent.Invoke"/>
     void Invoke(TArgs args);
 
-    void IInvocableEvent.Invoke(IEventArgs args)
+    void IInvocableEvent.Invoke(EventArgs args)
     {
         Invoke((TArgs)args);
     }
 
-    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs,System.Collections.Generic.ISet{Scot.Massie.Events.IInvocableEvent})"/>
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(System.EventArgs,System.Collections.Generic.ISet{Scot.Massie.Events.IInvocableEvent})"/>
     IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents);
 
     
     IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(
-        IEventArgs            args,
+        EventArgs             args,
         ISet<IInvocableEvent> alreadyInvolvedEvents)
     {
         return GenerateCallInfo((TArgs)args, alreadyInvolvedEvents);
     }
     
-    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs)"/>
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(System.EventArgs)"/>
     IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args);
 
-    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args)
+    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(EventArgs args)
     {
         return GenerateCallInfo((TArgs)args);
     }
 
-    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs,System.Collections.Generic.ISet{Scot.Massie.Events.IInvocableEvent},out bool)"/>
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(System.EventArgs,System.Collections.Generic.ISet{Scot.Massie.Events.IInvocableEvent},out bool)"/>
     IEnumerable<IEventListenerCallInfo> GenerateCallInfo(
         TArgs                 args,
         ISet<IInvocableEvent> alreadyInvolvedEvents,
         out bool              listenerOrderMatters);
     
-    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents, out bool listenerOrderMatters)
+    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(EventArgs             args, 
+                                                                         ISet<IInvocableEvent> alreadyInvolvedEvents, 
+                                                                         out bool              listenerOrderMatters)
     {
         return GenerateCallInfo((TArgs)args, alreadyInvolvedEvents, out listenerOrderMatters);
     }
 
-    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(Scot.Massie.Events.Args.IEventArgs,out bool)"/>
+    /// <inheritdoc cref="IInvocableEvent.GenerateCallInfo(System.EventArgs,out bool)"/>
     IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters);
     
-    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(IEventArgs args, out bool listenerOrderMatters)
+    IEnumerable<IEventListenerCallInfo> IInvocableEvent.GenerateCallInfo(EventArgs args, out bool listenerOrderMatters)
     {
         return GenerateCallInfo((TArgs)args, out listenerOrderMatters);
     }

@@ -1,4 +1,3 @@
-using Scot.Massie.Events.Args;
 using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
@@ -9,8 +8,8 @@ namespace Scot.Massie.Events;
 public static class Events
 {
     /// <summary>
-    /// Invokes multiple events together at the same time. Each event is passed its own IEventArgs object, which may be
-    /// used to generate the IEventArgs objects passed to any dependent events.
+    /// Invokes multiple events together at the same time. Each event is passed its own <see cref="EventArgs"/> object,
+    /// which may be used to generate the <see cref="EventArgs"/> objects passed to any dependent events.
     ///
     /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
     /// event B are invoked together with this static method, and event A has a listener with a higher priority than
@@ -18,7 +17,8 @@ public static class Events
     /// listener will be called first, followed by event B's listener, followed by event A's higher priority listener.
     /// </summary>
     /// <param name="toInvoke">The events to invoke, along with their respective event args objects.</param>
-    public static void InvokeMultiple(IEnumerable<(IInvocableEvent Event, IEventArgs Args)> toInvoke)
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static void InvokeMultiple(IEnumerable<(IInvocableEvent Event, EventArgs Args)> toInvoke)
     {
         var callInfo             = Enumerable.Empty<IEventListenerCallInfo>();
         var listenerOrderMatters = false;
@@ -37,8 +37,8 @@ public static class Events
     }
     
     /// <summary>
-    /// Invokes multiple events together at the same time. Each event is passed its own IEventArgs object, which may be
-    /// used to generate the IEventArgs objects passed to any dependent events.
+    /// Invokes multiple events together at the same time. Each event is passed its own <see cref="EventArgs"/> object,
+    /// which may be used to generate the <see cref="EventArgs"/> objects passed to any dependent events.
     ///
     /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
     /// event B are invoked together with this static method, and event A has a listener with a higher priority than
@@ -46,14 +46,14 @@ public static class Events
     /// listener will be called first, followed by event B's listener, followed by event A's higher priority listener.
     /// </summary>
     /// <param name="toInvoke">The events to invoke, along with their respective event args objects.</param>
-    public static void InvokeMultiple(params (IInvocableEvent Event, IEventArgs Args)[] toInvoke)
+    public static void InvokeMultiple(params (IInvocableEvent Event, EventArgs Args)[] toInvoke)
     {
-        InvokeMultiple((IEnumerable<(IInvocableEvent, IEventArgs)>)toInvoke);
+        InvokeMultiple((IEnumerable<(IInvocableEvent, EventArgs)>)toInvoke);
     }
 
     /// <summary>
-    /// Invokes multiple events together at the same time, passed the same IEventArgs object to each one, which may be
-    /// used to generate the IEventArgs objects passed to any dependent events.
+    /// Invokes multiple events together at the same time, passed the same <see cref="EventArgs"/> object to each one,
+    /// which may be used to generate the <see cref="EventArgs"/> objects passed to any dependent events.
     ///
     /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
     /// event B are invoked together with this static method, and event A has a listener with a higher priority than
@@ -62,7 +62,7 @@ public static class Events
     /// </summary>
     /// <param name="toInvoke">The events to invoke.</param>
     /// <param name="args">The event args to pass to all directly invoked events.</param>
-    public static void InvokeMultiple(IEnumerable<IInvocableEvent> toInvoke, IEventArgs args)
+    public static void InvokeMultiple(IEnumerable<IInvocableEvent> toInvoke, EventArgs args)
     {
         var callInfo             = Enumerable.Empty<IEventListenerCallInfo>();
         var listenerOrderMatters = false;
@@ -81,8 +81,8 @@ public static class Events
     }
     
     /// <summary>
-    /// Invokes multiple events together at the same time, passed the same IEventArgs object to each one, which may be
-    /// used to generate the IEventArgs objects passed to any dependent events.
+    /// Invokes multiple events together at the same time, passed the same <see cref="EventArgs"/> object to each one,
+    /// which may be used to generate the <see cref="EventArgs"/> objects passed to any dependent events.
     ///
     /// Listeners from all events are called in a single pool respecting priority if applicable. e.g. if event A and
     /// event B are invoked together with this static method, and event A has a listener with a higher priority than
@@ -92,7 +92,7 @@ public static class Events
     /// <param name="toInvoke">The events to invoke.</param>
     /// <param name="args">The event args to pass to all directly invoked events.</param>
     public static void InvokeMultiple<TArgs>(IEnumerable<IInvocableEvent<TArgs>> toInvoke, TArgs args)
-        where TArgs : IEventArgs
+        where TArgs : EventArgs
     {
         var callInfo             = Enumerable.Empty<IEventListenerCallInfo>();
         var listenerOrderMatters = false;
