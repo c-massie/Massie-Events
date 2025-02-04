@@ -1,6 +1,5 @@
 using MassieEventsTests.Dummies;
 using Scot.Massie.Events;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace MassieEventsTests;
@@ -13,17 +12,17 @@ public class EventTest : IInvocableEventTest
         
     }
 
-    public override IInvocableEvent<EventArgsWithString> MakeEvent()
+    protected override IInvocableEvent<EventArgsWithString> MakeEvent()
     {
         return new Event<EventArgsWithString>();
     }
 
-    public override IInvocableEvent<EventArgsWithInt> MakeDifferentEvent()
+    protected override IInvocableEvent<EventArgsWithInt> MakeDifferentEvent()
     {
         return new Event<EventArgsWithInt>();
     }
 
-    public override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
+    protected override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
     {
         return new OrderedEvent<EventArgsWithString>();
     }

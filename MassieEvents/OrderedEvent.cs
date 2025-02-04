@@ -19,7 +19,8 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     /// Threadsafe lock. All operations on this are in synchronisation with this lock.
     /// </summary>
     private readonly object _lock = new();
-    
+
+    /// <inheritdoc />
     public ICollection<EventListener<TArgs>> Listeners
     {
         get
@@ -33,6 +34,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public IList<(EventListener<TArgs> Listener, double? Priority)> ListenersWithPriorities
     {
         get
@@ -44,6 +46,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public ICollection<IInvocableEvent> DependentEvents
     {
         get
@@ -55,6 +58,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public bool ListenerOrderMatters
     {
         get
@@ -84,6 +88,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         return new ProtectedPriorityEvent<TArgs>(this);
     }
 
+    /// <inheritdoc />
     public void Invoke(TArgs args)
     {
         var toCall = GenerateCallInfo(args, out var listenerOrderMatters);
@@ -95,11 +100,13 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
             c.CallListener();
     }
 
+    /// <inheritdoc />
     public void Register(EventListener listener)
     {
         Register(_ => listener());
     }
 
+    /// <inheritdoc />
     public void Register(EventListener<TArgs> listener)
     {
         lock(_lock)
@@ -108,11 +115,13 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void Register(EventListener listener, double priority)
     {
         Register(_ => listener(), priority);
     }
 
+    /// <inheritdoc />
     public void Register(EventListener<TArgs> listener, double priority)
     {
         lock(_lock)
@@ -121,11 +130,13 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void Register(IInvocableEvent<TArgs> dependentEvent)
     {
         Register(dependentEvent, x => x);
     }
 
+    /// <inheritdoc />
     public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent, Func<TArgs, TOtherArgs> argConverter)
         where TOtherArgs : IEventArgs
     {
@@ -135,6 +146,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void Deregister(EventListener<TArgs> listener)
     {
         lock(_lock)
@@ -146,6 +158,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
         where TOtherArgs : IEventArgs
     {
@@ -157,6 +170,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void ClearListeners()
     {
         lock(_lock)
@@ -166,6 +180,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void ClearDependentEvents()
     {
         lock(_lock)
@@ -174,6 +189,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public void Clear()
     {
         lock(_lock)
@@ -183,16 +199,19 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         }
     }
 
+    /// <inheritdoc />
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, ISet<IInvocableEvent> alreadyInvolvedEvents)
     {
         return GenerateCallInfo(args, alreadyInvolvedEvents, out _);
     }
 
+    /// <inheritdoc />
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args)
     {
         return GenerateCallInfo(args, new HashSet<IInvocableEvent>());
     }
 
+    /// <inheritdoc />
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs                 args,
                                                                 ISet<IInvocableEvent> alreadyInvolvedEvents,
                                                                 out bool              listenerOrderMatters)
@@ -247,6 +266,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         return result;
     }
 
+    /// <inheritdoc />
     public IEnumerable<IEventListenerCallInfo> GenerateCallInfo(TArgs args, out bool listenerOrderMatters)
     {
         return GenerateCallInfo(args, new HashSet<IInvocableEvent>(), out listenerOrderMatters);

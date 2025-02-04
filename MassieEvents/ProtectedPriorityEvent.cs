@@ -28,42 +28,50 @@ public class ProtectedPriorityEvent<TArgs> : IPriorityEvent<TArgs>
         _inner = inner;
     }
 
+    /// <inheritdoc />
     public void Register(EventListener listener)
     {
         _inner.Register(listener);
     }
 
+    /// <inheritdoc />
     public void Register(EventListener<TArgs> listener)
     {
         _inner.Register(listener);
     }
 
+    /// <inheritdoc />
     public void Register(EventListener listener, double priority)
     {
         _inner.Register(listener, priority);
     }
 
+    /// <inheritdoc />
     public void Register(EventListener<TArgs> listener, double priority)
     {
         _inner.Register(listener, priority);
     }
 
+    /// <inheritdoc />
     public void Register(IInvocableEvent<TArgs> dependentEvent)
     {
         _inner.Register(dependentEvent);
     }
 
+    /// <inheritdoc />
     public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent, Func<TArgs, TOtherArgs> argConverter)
         where TOtherArgs : IEventArgs
     {
         _inner.Register(dependentEvent, argConverter);
     }
 
+    /// <inheritdoc />
     public void Deregister(EventListener<TArgs> listener)
     {
         _inner.Deregister(listener);
     }
 
+    /// <inheritdoc />
     public void Deregister<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent)
         where TOtherArgs : IEventArgs
     {

@@ -19,15 +19,15 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         
     }
 
-    public abstract override IInvocablePriorityEvent<EventArgsWithString> MakeEvent();
+    protected abstract override IInvocablePriorityEvent<EventArgsWithString> MakeEvent();
 
-    public abstract override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent();
+    protected abstract override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent();
 
     [Fact]
     public void RegisterListener_WithoutPriority()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e = MakeEvent();
-        EventListener<EventArgsWithString>           l = _ => { };
+        var                                e = MakeEvent();
+        EventListener<EventArgsWithString> l = _ => { };
         
         e.Register(l);
 
@@ -50,8 +50,8 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void RegisterListener_WithPriority_Single()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e = MakeEvent();
-        EventListener<EventArgsWithString>           l = _ => { };
+        var                                e = MakeEvent();
+        EventListener<EventArgsWithString> l = _ => { };
         
         e.Register(l, 7);
 
@@ -74,10 +74,10 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void RegisterListener_WithPriority_Multiple()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e  = MakeEvent();
-        EventListener<EventArgsWithString>           l1 = _ => { Console.Out.WriteLine("First"); };
-        EventListener<EventArgsWithString>           l2 = _ => { Console.Out.WriteLine("Second"); };
-        EventListener<EventArgsWithString>           l3 = _ => { Console.Out.WriteLine("Third"); };
+        var                                e  = MakeEvent();
+        EventListener<EventArgsWithString> l1 = _ => { Console.Out.WriteLine("First"); };
+        EventListener<EventArgsWithString> l2 = _ => { Console.Out.WriteLine("Second"); };
+        EventListener<EventArgsWithString> l3 = _ => { Console.Out.WriteLine("Third"); };
 
         e.Register(l1, 7);
         e.Register(l2, 21);
@@ -100,11 +100,11 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void RegisterListener_WithPriority_NonGeneric()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e = MakeEvent();
-        Counter                                      c = new Counter();
-        EventListener                                l = () => { c.Number += 1; };
+        var e = MakeEvent();
+        var c = new Counter();
+        void L() => c.Number += 1;
 
-        e.Register(l, 7);
+        e.Register(L, 7);
 
 
         var listeners = e.ListenersWithPriorities;
@@ -119,9 +119,9 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void GenerateCallInfo_OneListenerWithPriority()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e = MakeEvent();
-        EventArgsWithString                          a = new EventArgsWithString("Doot");
-        EventListener<EventArgsWithString>           l = _ => { };
+        var                                e = MakeEvent();
+        var                                a = new EventArgsWithString("Doot");
+        EventListener<EventArgsWithString> l = _ => { };
 
         e.Register(l, 7);
         var info = e.GenerateCallInfo(a, out var orderMatters).ToList();
@@ -138,11 +138,11 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void GenerateCallInfo_MultipleListenersWithPriority()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e  = MakeEvent();
-        EventArgsWithString                          a  = new EventArgsWithString("Doot");
-        EventListener<EventArgsWithString>           l1 = _ => { Console.Out.WriteLine("First"); };
-        EventListener<EventArgsWithString>           l2 = _ => { Console.Out.WriteLine("Second"); };
-        EventListener<EventArgsWithString>           l3 = _ => { Console.Out.WriteLine("Third"); };
+        var                                e  = MakeEvent();
+        var                                a  = new EventArgsWithString("Doot");
+        EventListener<EventArgsWithString> l1 = _ => { Console.Out.WriteLine("First"); };
+        EventListener<EventArgsWithString> l2 = _ => { Console.Out.WriteLine("Second"); };
+        EventListener<EventArgsWithString> l3 = _ => { Console.Out.WriteLine("Third"); };
 
         e.Register(l1, 7);
         e.Register(l2, 21);
@@ -170,12 +170,12 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
     [Fact]
     public void GenerateCallInfo_MultipleListeners_SomeWithPrioritySomeWithout()
     {
-        IInvocablePriorityEvent<EventArgsWithString> e  = MakeEvent();
-        EventArgsWithString                          a  = new EventArgsWithString("Doot");
-        EventListener<EventArgsWithString>           l1 = _ => { Console.Out.WriteLine("First"); };
-        EventListener<EventArgsWithString>           l2 = _ => { Console.Out.WriteLine("Second"); };
-        EventListener<EventArgsWithString>           l3 = _ => { Console.Out.WriteLine("Third"); };
-        EventListener<EventArgsWithString>           l4 = _ => { Console.Out.WriteLine("Fourth"); };
+        var                                e  = MakeEvent();
+        var                                a  = new EventArgsWithString("Doot");
+        EventListener<EventArgsWithString> l1 = _ => { Console.Out.WriteLine("First"); };
+        EventListener<EventArgsWithString> l2 = _ => { Console.Out.WriteLine("Second"); };
+        EventListener<EventArgsWithString> l3 = _ => { Console.Out.WriteLine("Third"); };
+        EventListener<EventArgsWithString> l4 = _ => { Console.Out.WriteLine("Fourth"); };
 
         e.Register(l1, 7);
         e.Register(l2);

@@ -15,6 +15,8 @@ Include the package `Scot.Massie.Events`
 3. Right-click the project you want to add this to, go to `Add Reference...` in VS, `Add... > Add Reference...` in Rider.
 4. Click the "Add from..."/"Browse" button in the window that opens, and navigate to the .dll file downloaded.
 
+**NOTE:** When installing in this method, some documentation (specifically, anything using the `<inheritdoc>` tag) will not be displayed properly in Rider or anything else using the ReSharper engine. [This issue is tracked here.](https://youtrack.jetbrains.com/issue/RSRP-478940/Rider-and-inheritdoc-support)
+
 ## How to use
 
 ### Creating events

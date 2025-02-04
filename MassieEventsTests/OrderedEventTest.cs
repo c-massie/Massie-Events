@@ -12,17 +12,17 @@ public class OrderedEventTest : IInvocablePriorityEventTest
         
     }
 
-    public override IInvocablePriorityEvent<EventArgsWithString> MakeEvent()
+    protected override IInvocablePriorityEvent<EventArgsWithString> MakeEvent()
     {
         return new OrderedEvent<EventArgsWithString>();
     }
 
-    public override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent()
+    protected override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent()
     {
         return new OrderedEvent<EventArgsWithInt>();
     }
 
-    public override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
+    protected override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
     {
         return new OrderedEvent<EventArgsWithString>();
     }

@@ -19,22 +19,22 @@ public abstract class IInvocableEventTest
     
     public ITestOutputHelper Output;
 
-    public IInvocableEventTest(ITestOutputHelper output)
+    protected IInvocableEventTest(ITestOutputHelper output)
     {
         Output = output;
     }
 
-    public abstract IInvocableEvent<EventArgsWithString> MakeEvent();
+    protected abstract IInvocableEvent<EventArgsWithString> MakeEvent();
 
-    public abstract IInvocableEvent<EventArgsWithInt> MakeDifferentEvent();
+    protected abstract IInvocableEvent<EventArgsWithInt> MakeDifferentEvent();
 
-    public abstract IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority();
+    protected abstract IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority();
 
     [Fact]
     public void RegisterListener_Single()
     {
-        IInvocableEvent<EventArgsWithString> e = MakeEvent();
-        EventListener<EventArgsWithString>   l = _ => { };
+        var e = MakeEvent();
+        EventListener<EventArgsWithString> l = _ => { };
         
         e.Register(l);
 
@@ -65,12 +65,11 @@ public abstract class IInvocableEventTest
     [Fact]
     public void RegisterListener_NonGeneric()
     {
-        IInvocableEvent<EventArgsWithString> e = MakeEvent();
-        Counter                              c = new Counter();
-        EventListener                        l = () => { c.Number += 1; };
+        var e = MakeEvent();
+        var c = new Counter();
+        void L() => c.Number += 1;
         
-        e.Register(l);
-        
+        e.Register(L);
         
         var listeners = e.Listeners;
         listeners.Should().HaveCount(1);
@@ -201,14 +200,14 @@ public abstract class IInvocableEventTest
     [Fact]
     public void ClearListeners()
     {
-        IInvocableEvent<EventArgsWithString> e  = MakeEvent();
-        EventListener<EventArgsWithString>   l1 = _ => { Console.Out.WriteLine("First"); };
-        EventListener<EventArgsWithString>   l2 = _ => { Console.Out.WriteLine("Second"); };
-        EventListener<EventArgsWithString>   l3 = _ => { Console.Out.WriteLine("Third"); };
+        var e = MakeEvent();
+        void L1() => Console.Out.WriteLine("First");
+        void L2() => Console.Out.WriteLine("Second");
+        void L3() => Console.Out.WriteLine("Third");
         
-        e.Register(l1);
-        e.Register(l2);
-        e.Register(l3);
+        e.Register(L1);
+        e.Register(L2);
+        e.Register(L3);
         e.ClearListeners();
         
         e.Listeners.Should().BeEmpty();
@@ -217,10 +216,10 @@ public abstract class IInvocableEventTest
     [Fact]
     public void ClearDependentEvents()
     {
-        IInvocableEvent<EventArgsWithString> e  = MakeEvent();
-        IInvocableEvent<EventArgsWithString> d1 = MakeEvent();
-        IInvocableEvent<EventArgsWithString> d2 = MakeEvent();
-        IInvocableEvent<EventArgsWithString> d3 = MakeEvent();
+        var e  = MakeEvent();
+        var d1 = MakeEvent();
+        var d2 = MakeEvent();
+        var d3 = MakeEvent();
 
         e.Register(d1);
         e.Register(d2);
@@ -233,17 +232,17 @@ public abstract class IInvocableEventTest
     [Fact]
     public void Clear()
     {
-        IInvocableEvent<EventArgsWithString> e  = MakeEvent();
-        EventListener<EventArgsWithString>   l1 = _ => { Console.Out.WriteLine("First"); };
-        EventListener<EventArgsWithString>   l2 = _ => { Console.Out.WriteLine("Second"); };
-        EventListener<EventArgsWithString>   l3 = _ => { Console.Out.WriteLine("Third"); };
-        IInvocableEvent<EventArgsWithString> d1 = MakeEvent();
-        IInvocableEvent<EventArgsWithString> d2 = MakeEvent();
-        IInvocableEvent<EventArgsWithString> d3 = MakeEvent();
+        var  e  = MakeEvent();
+        void L1() => Console.Out.WriteLine("First");
+        void L2() => Console.Out.WriteLine("Second");
+        void L3() => Console.Out.WriteLine("Third");
+        var  d1 = MakeEvent();
+        var  d2 = MakeEvent();
+        var  d3 = MakeEvent();
         
-        e.Register(l1);
-        e.Register(l2);
-        e.Register(l3);
+        e.Register(L1);
+        e.Register(L2);
+        e.Register(L3);
         e.Register(d1);
         e.Register(d2);
         e.Register(d3);

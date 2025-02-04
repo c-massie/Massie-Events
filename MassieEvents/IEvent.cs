@@ -12,7 +12,7 @@ namespace Scot.Massie.Events;
 /// </remarks>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;();
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
 ///  
 /// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
 /// </code>
@@ -48,7 +48,7 @@ public interface IEvent
 /// </typeparam>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;();
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
 ///  
 /// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
 /// </code>
@@ -107,7 +107,7 @@ public interface IEvent<TArgs> : IEvent where TArgs : IEventArgs
     void Deregister(EventListener<TArgs> listener);
     
     /// <summary>
-    /// Deregisters a dependent event from this event. It will not longer be invoked when this event is invoked.
+    /// Deregisters a dependent event from this event. It will no longer be invoked when this event is invoked.
     /// </summary>
     /// <param name="dependentEvent">The event to deregister.</param>
     /// <typeparam name="TOtherArgs">The type of the other event's event args.</typeparam>
