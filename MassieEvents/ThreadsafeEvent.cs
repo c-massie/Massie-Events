@@ -2,18 +2,15 @@ using Scot.Massie.Events.CallInfo;
 
 namespace Scot.Massie.Events;
 
-/// <inheritdoc cref="IInvocablePriorityEvent{TArgs}"/>
-public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
+/// <inheritdoc cref="IInvocableEvent{TArgs}"/>
+public class ThreadsafeEvent<TArgs> : IInvocableEvent<TArgs>
     where TArgs : EventArgs
 {
     private readonly IList<(IInvocableEvent Event, Func<TArgs, EventArgs> Converter)> 
         _dependentEventsWithArgConverters = new List<(IInvocableEvent, Func<TArgs, EventArgs>)>();
     
-    private readonly ICollection<EventListener<TArgs>> _listenersWithoutPriority = new HashSet<EventListener<TArgs>>();
+    private readonly ICollection<EventListener<TArgs>> _listeners = new HashSet<EventListener<TArgs>>();
 
-    private readonly ICollection<(EventListener<TArgs> Listener, double Priority)> _listenersWithPriority
-        = new List<(EventListener<TArgs> Listener, double Priority)>();
-    
     /// <summary>
     /// Threadsafe lock. All operations on this are in synchronisation with this lock.
     /// </summary>
@@ -26,22 +23,8 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         {
             lock(_lock)
             {
-                return _listenersWithPriority.Select(x => x.Listener)
-                                             .Concat(_listenersWithoutPriority)
-                                             .ToList();
+                return _listeners.ToList();
             }
-        }
-    }
-
-    /// <inheritdoc />
-    public IList<(EventListener<TArgs> Listener, double? Priority)> ListenersWithPriorities
-    {
-        get
-        {
-            return _listenersWithoutPriority
-                  .Select(x => (x, (double?)null))
-                  .Concat(_listenersWithPriority.Select(x => (x.Listener, (double?)x.Priority)))
-                  .ToList();
         }
     }
 
@@ -64,27 +47,23 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         {
             lock(_lock)
             {
-                return _listenersWithPriority.Count != 0
-                    || _dependentEventsWithArgConverters.Any(x => x.Event.ListenerOrderMatters);
+                return _dependentEventsWithArgConverters.Any(x => x.Event.ListenerOrderMatters);
             }
         }
     }
 
     /// <summary>
-    /// Creates a new ordered event object.
+    /// Creates a new event object.
     /// </summary>
-    public OrderedEvent()
+    public ThreadsafeEvent()
     {
+        
     }
 
-    ProtectedEvent<TArgs> IInvocableEvent<TArgs>.Protected()
+    /// <inheritdoc />
+    public ProtectedEvent<TArgs> Protected()
     {
         return new ProtectedEvent<TArgs>(this);
-    }
-
-    ProtectedPriorityEvent<TArgs> IInvocablePriorityEvent<TArgs>.Protected()
-    {
-        return new ProtectedPriorityEvent<TArgs>(this);
     }
 
     /// <inheritdoc />
@@ -110,22 +89,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     {
         lock(_lock)
         {
-            _listenersWithoutPriority.Add(listener);
-        }
-    }
-
-    /// <inheritdoc />
-    public void Register(EventListener listener, double priority)
-    {
-        Register(_ => listener(), priority);
-    }
-
-    /// <inheritdoc />
-    public void Register(EventListener<TArgs> listener, double priority)
-    {
-        lock(_lock)
-        {
-            _listenersWithPriority.Add((listener, priority));
+            _listeners.Add(listener);
         }
     }
 
@@ -136,7 +100,8 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     }
 
     /// <inheritdoc />
-    public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent, Func<TArgs, TOtherArgs> argConverter)
+    public void Register<TOtherArgs>(IInvocableEvent<TOtherArgs> dependentEvent,
+                                     Func<TArgs, TOtherArgs>     argConverter)
         where TOtherArgs : EventArgs
     {
         lock(_lock)
@@ -150,10 +115,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     {
         lock(_lock)
         {
-            _listenersWithoutPriority.Remove(listener);
-
-            foreach(var item in _listenersWithPriority.Where(x => x.Listener == listener).ToList()) 
-                _listenersWithPriority.Remove(item);
+            _listeners.Remove(listener);
         }
     }
 
@@ -174,8 +136,7 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     {
         lock(_lock)
         {
-            _listenersWithoutPriority.Clear();
-            _listenersWithPriority.Clear();
+            _listeners.Clear();
         }
     }
 
@@ -216,31 +177,19 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
                                                                 out bool              listenerOrderMatters)
     {
         listenerOrderMatters = false;
-
+        
         if(!alreadyInvolvedEvents.Add(this))
             return Enumerable.Empty<IEventListenerCallInfo>();
-
+        
         IList<(IInvocableEvent Event, Func<TArgs, EventArgs> Converter)>? dependentEventsWithArgConverters = null;
         IEnumerable<IEventListenerCallInfo> result;
 
         lock(_lock)
         {
-            var withPriority
-                = _listenersWithPriority
-                 .Select(IEventListenerCallInfo (x)
-                             => new EventListenerCallInfo<TArgs>(x.Listener, x.Priority, args))
-                 .ToList();
-
-            if(withPriority.Count != 0)
-                listenerOrderMatters = true;
-
-            var withoutPriority
-                = _listenersWithoutPriority
-                 .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
-                 .ToList();
-
-            result = withPriority.Concat(withoutPriority);
-
+            result = _listeners
+                    .Select(IEventListenerCallInfo (x) => new EventListenerCallInfo<TArgs>(x, null, args))
+                    .ToList();
+            
             if(_dependentEventsWithArgConverters.Count != 0)
                 dependentEventsWithArgConverters = _dependentEventsWithArgConverters.ToList();
         }
@@ -248,13 +197,13 @@ public class OrderedEvent<TArgs> : IInvocablePriorityEvent<TArgs>
         if(dependentEventsWithArgConverters is not null)
         {
             var forDependentEvents = new List<IEventListenerCallInfo>();
-
+            
             foreach(var (ev, converter) in dependentEventsWithArgConverters)
             {
                 forDependentEvents.AddRange(ev.GenerateCallInfo(converter(args),
                                                                 alreadyInvolvedEvents,
                                                                 out var depEvListenerOrderMatters));
-
+                
                 if(depEvListenerOrderMatters)
                     listenerOrderMatters = true;
             }

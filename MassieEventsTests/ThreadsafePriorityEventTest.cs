@@ -4,9 +4,9 @@ using Xunit.Abstractions;
 
 namespace MassieEventsTests;
 
-public class OrderedEventTest : IInvocablePriorityEventTest
+public class ThreadsafePriorityEventTest : IInvocablePriorityEventTest
 {
-    public OrderedEventTest(ITestOutputHelper output)
+    public ThreadsafePriorityEventTest(ITestOutputHelper output)
         : base(output)
     {
         
@@ -14,17 +14,17 @@ public class OrderedEventTest : IInvocablePriorityEventTest
 
     protected override IInvocablePriorityEvent<EventArgsWithString> MakeEvent()
     {
-        return new OrderedEvent<EventArgsWithString>();
+        return new ThreadsafePriorityEvent<EventArgsWithString>();
     }
 
     protected override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent()
     {
-        return new OrderedEvent<EventArgsWithInt>();
+        return new ThreadsafePriorityEvent<EventArgsWithInt>();
     }
 
     protected override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
     {
-        return new OrderedEvent<EventArgsWithString>();
+        return new ThreadsafePriorityEvent<EventArgsWithString>();
     }
 }
 
