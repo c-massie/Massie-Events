@@ -11,7 +11,7 @@ Include the package `Scot.Massie.Events`
 ### From Github
 
 1. Go to https://github.com/c-massie/Massie-Events/releases
-2. Download the latest `.dll` version of the library.
+2. Download the latest `.dll` version of the library and the accompanying `.xml` file, containing documentation for the library. Place them together in the same desired directory.
 3. Right-click the project you want to add this to, go to `Add Reference...` in VS, `Add... > Add Reference...` in Rider.
 4. Click the "Add from..."/"Browse" button in the window that opens, and navigate to the .dll file downloaded.
 

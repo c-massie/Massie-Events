@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Scot.Massie.Events</RootNamespace>
@@ -16,6 +17,9 @@
         <PackageId>Scot.Massie.Events</PackageId>
         <Title>Massie Events</Title>
         <RepositoryType>git</RepositoryType>
+        <AssemblyName>Massie Events</AssemblyName>
+        <Product>Massie Events</Product>
+        <AssemblyVersion>0.1</AssemblyVersion>
     </PropertyGroup>
 
 </Project>
