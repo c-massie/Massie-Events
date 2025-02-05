@@ -17,7 +17,7 @@ namespace Scot.Massie.Events;
 /// <example>
 /// <code>
 /// private readonly IInvocablePriorityEvent&lt;MyEventArgs&gt; _thingHappened
-///     = new OrderedEvent&lt;MyEventArgs&gt; ();
+///     = new PriorityEvent&lt;MyEventArgs&gt; ();
 ///  
 /// public IPriorityEvent&lt;MyEventArgs&gt; ThingHappened { get; }
 ///     = new ProtectedPriorityEvent&lt;MyEventArgs&gt;(_thingHappened);

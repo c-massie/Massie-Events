@@ -26,6 +26,11 @@ Include the package `Scot.Massie.Events`
 Events can be created on an interface or class by declaring them as a regular, read-only property.
 
 ```c#
+public class MyEventArgs : EventArgs
+{
+    // ...    
+}
+
 public interface IMyInterface
 {
     IEvent<MyEventArgs> ThingHappened { get; }
@@ -39,13 +44,15 @@ public class MyClass : IMyInterface
 
 Events should generally be named with past-tense verbs, (e.g. `ThingHappened`) although it may make sense to name them with present-tense or future-tense verbs (e.g. `ThingHappening`, `ThingAboutToHappen`) where multiple events represent different steps in the process of something happening. Where the past tense could be misconstrued 
 
-Events take a generic type argument, which is the type of the event args object passed to them. This should be a class that implements the `IEventArgs` interface.
+Events take a generic type argument, which is the type of the event args object passed to them. This should be a class that inherits from the `EventArgs` class - this is the same base class as is used by C#'s native delegate-based events.
 
-Note: C# has language-level syntax support for events, using the `event` keyword. Do not use this - this syntax is intended for delegate-based events, which is a separate system from this.
+The above example assumes a single-threaded context. If creating an event field that may be interacted with by multiple different threads, you should use `ThreadsafeEvent<...>` instead.
+
+**Note:** C# has language-level syntax support for events, using the `event` keyword. Do not use this - this syntax is intended for delegate-based events, which is a separate system from this.
 
 #### Events with support for listener priority
 
-Instead of using `IEvent<...>` and `Event<...>`, you can use `IPriorityEvent` and `OrderedEvent` to declare an event where listeners can be registered with support for priorities.
+Instead of using `IEvent<...>` and `Event<...>`, you can use `IPriorityEvent` and `PriorityEvent` to declare an event where listeners can be registered with support for priorities.
 
 ```c#
 public interface IMyInterface
@@ -55,9 +62,11 @@ public interface IMyInterface
 
 public class MyClass : IMyInterface
 {
-    public IPriorityEvent<MyEventArgs> ThingHappened { get; } = new OrderedEvent<MyEventArgs>();
+    public IPriorityEvent<MyEventArgs> ThingHappened { get; } = new PriorityEvent<MyEventArgs>();
 }
 ```
+
+Again, this example assumes a single-threaded context. If creating an event with support for registering listeners with a priority that may be interacted with by multiple different threads, you should use `ThreadsafePriorityEvent<...>` instead.
 
 #### Protected events
 
@@ -75,7 +84,7 @@ public interface IMyInterface
 public class MyClass : IMyInterface
 {
     private readonly IInvocableEvent<MyEventArgs>         _thingHappened      = new Event<MyEventArgs>();
-    private readonly IInvocablePriorityEvent<MyEventArgs> _otherThingHappened = new OrderedEvent<MyEventArgs>();
+    private readonly IInvocablePriorityEvent<MyEventArgs> _otherThingHappened = new PriorityEvent<MyEventArgs>();
     
     public IEvent<MyEventArgs> ThingHappened { get; }
         = new ProtectedEvent<MyEventArgs>(_thingHappened);
@@ -97,7 +106,7 @@ public interface IMyInterface
 public class MyClass : IMyInterface
 {
     private readonly IInvocableEvent<MyEventArgs>         _thingHappened      = new Event<MyEventArgs>();
-    private readonly IInvocablePriorityEvent<MyEventArgs> _otherThingHappened = new OrderedEvent<MyEventArgs>();
+    private readonly IInvocablePriorityEvent<MyEventArgs> _otherThingHappened = new PriorityEvent<MyEventArgs>();
     
     public IEvent<MyEventArgs>         ThingHappened      { get; } = _thingHappened     .Protected();
     public IPriorityEvent<MyEventArgs> OtherThingHappened { get; } = _otherThingHappened.Protected();
@@ -111,7 +120,7 @@ Events can be declared as being dependent on other events with `.Register(...)` 
 Events can also be deregistered as dependent events with `.Deregister(...)`.
 
 ```c#
-public class BaaedEventArgs : IEventArgs
+public class BaaedEventArgs : EventArgs
 {
     public double Volume { get; set; }
     
@@ -155,7 +164,7 @@ In the above example, when any sheep baas, (i.e. the `_baaed` event is invoked) 
 This can be amended to convert the event args object to be more appropriate for the dependent event, by using different event args classes and providing an anonymous function to convert from one to the other. See below.
 
 ```c#
-public class BaaedEventArgs : IEventArgs
+public class BaaedEventArgs : EventArgs
 {
     public double Volume { get; set; }
     
@@ -172,7 +181,7 @@ public class MySheep
     public IEvent<BaaedEventArgs> Baaed { get; } = _baaed.Protected();
 }
 
-public class PastureSheepBaaedEventArgs : IEventArgs
+public class PastureSheepBaaedEventArgs : EventArgs
 {
     private readonly BaaedEventArgs _sourceEventArgs;
     
@@ -228,7 +237,7 @@ myClassInstance.OtherThingHappened.Register(args => HandleOtherThingHavingHappen
 
 Event listeners will be called in order of priority, from lowest to highest, with listeners without a priority being called first. Where event args having some properties that may be set before whatever the event represents actually happens, this allows listeners with the highest priority to have the final say.
 
-If you store the listener in a field or variable (as a `EventListener<TArgs>` where TArgs is an `IEventArgs` type), you can pass this to the `.Deregister(...)` method to deregister the listener from the event.
+If you store the listener in a field or variable (as a `EventListener<TArgs>` where TArgs is an `EventArgs` type), you can pass this to the `.Deregister(...)` method to deregister the listener from the event.
 
 ```c#
 EventListener<MyEventArgs> listener = args => DoSomethingElse();
@@ -242,7 +251,7 @@ myClassInstance.ThingHappened.Deregister(listener);
 
 #### Single events
 
-You can invoke an event with the `.Invoke(...)` method. This accepts an `IEventArgs` object (matching the event) which will be passed to each direct listener, and used to derive an `IEventArgs` object to pass to each dependent event.
+You can invoke an event with the `.Invoke(...)` method. This accepts an `EventArgs` object (matching the event) which will be passed to each direct listener, and used to derive an `EventArgs` object to pass to each dependent event.
 
 This will call listeners without a priority, then listeners with a priority in order from lowest to highest priority.
 
