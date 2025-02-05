@@ -1,4 +1,4 @@
-namespace Scot.Massie.Events;
+namespace Scot.Massie.Events.Protected;
 
 /// <summary>
 /// Wrapper for events allowing you to register listeners and dependent events to the wrapped event, while explicitly

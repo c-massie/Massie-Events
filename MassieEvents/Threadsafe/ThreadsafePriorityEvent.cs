@@ -1,6 +1,7 @@
 using Scot.Massie.Events.CallInfo;
+using Scot.Massie.Events.Protected;
 
-namespace Scot.Massie.Events;
+namespace Scot.Massie.Events.Threadsafe;
 
 /// <inheritdoc cref="IInvocablePriorityEvent{TArgs}"/>
 public class ThreadsafePriorityEvent<TArgs> : IInvocablePriorityEvent<TArgs>

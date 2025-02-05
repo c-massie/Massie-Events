@@ -1,7 +1,7 @@
 using Scot.Massie.Events.Dummies;
 using Xunit.Abstractions;
 
-namespace Scot.Massie.Events;
+namespace Scot.Massie.Events.Threadsafe;
 
 public class ThreadsafePriorityEventTest : IInvocablePriorityEventTest
 {

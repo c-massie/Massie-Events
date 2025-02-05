@@ -1,4 +1,6 @@
 using Scot.Massie.Events.CallInfo;
+using Scot.Massie.Events.Protected;
+using Scot.Massie.Events.Threadsafe;
 
 namespace Scot.Massie.Events;
 

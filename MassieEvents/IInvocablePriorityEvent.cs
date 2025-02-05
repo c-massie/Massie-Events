@@ -1,3 +1,5 @@
+using Scot.Massie.Events.Protected;
+
 namespace Scot.Massie.Events;
 
 /// <summary>

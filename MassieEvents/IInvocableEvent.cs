@@ -1,5 +1,6 @@
 using System.Collections;
 using Scot.Massie.Events.CallInfo;
+using Scot.Massie.Events.Protected;
 
 namespace Scot.Massie.Events;
 
