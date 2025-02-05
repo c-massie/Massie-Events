@@ -1,6 +1,6 @@
 using System;
 
-namespace MassieEventsTests.Dummies;
+namespace Scot.Massie.Events.Dummies;
 
 public class EventArgsWithString : EventArgs
 {

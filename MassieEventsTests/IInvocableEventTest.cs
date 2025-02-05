@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using MassieEventsTests.Dummies;
-using Scot.Massie.Events;
 using Scot.Massie.Events.CallInfo;
+using Scot.Massie.Events.Dummies;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MassieEventsTests;
+namespace Scot.Massie.Events;
 
 // ReSharper disable once InconsistentNaming
 public abstract class IInvocableEventTest

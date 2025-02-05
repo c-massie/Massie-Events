@@ -125,7 +125,7 @@ public class ThreadsafeEvent<TArgs> : IInvocableEvent<TArgs>
     {
         lock(_lock)
         {
-            for(int i = 0; i < _dependentEventsWithArgConverters.Count; i++)
+            for(int i = _dependentEventsWithArgConverters.Count - 1; i >= 0; i--)
                 if(ReferenceEquals(dependentEvent, _dependentEventsWithArgConverters[i].Event))
                     _dependentEventsWithArgConverters.RemoveAt(i);
         }

@@ -71,7 +71,7 @@ public class ThreadsafePriorityEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     }
 
     /// <summary>
-    /// Creates a new ordered event object.
+    /// Creates a new event object with support for calling listeners in order of priority.
     /// </summary>
     public ThreadsafePriorityEvent()
     {
@@ -163,7 +163,7 @@ public class ThreadsafePriorityEvent<TArgs> : IInvocablePriorityEvent<TArgs>
     {
         lock(_lock)
         {
-            for(int i = 0; i < _dependentEventsWithArgConverters.Count; i++)
+            for(int i = _dependentEventsWithArgConverters.Count - 1; i >= 0; i--)
                 if(ReferenceEquals(dependentEvent, _dependentEventsWithArgConverters[i].Event))
                     _dependentEventsWithArgConverters.RemoveAt(i);
         }

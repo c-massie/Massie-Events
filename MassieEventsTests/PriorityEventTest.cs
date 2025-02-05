@@ -3,27 +3,25 @@ using Xunit.Abstractions;
 
 namespace Scot.Massie.Events;
 
-public class ThreadsafePriorityEventTest : IInvocablePriorityEventTest
+public class PriorityEventTest : IInvocablePriorityEventTest
 {
-    public ThreadsafePriorityEventTest(ITestOutputHelper output)
+    public PriorityEventTest(ITestOutputHelper output)
         : base(output)
     {
-        
     }
-
+    
     protected override IInvocablePriorityEvent<EventArgsWithString> MakeEvent()
     {
-        return new ThreadsafePriorityEvent<EventArgsWithString>();
+        return new PriorityEvent<EventArgsWithString>();
     }
 
     protected override IInvocablePriorityEvent<EventArgsWithInt> MakeDifferentEvent()
     {
-        return new ThreadsafePriorityEvent<EventArgsWithInt>();
+        return new PriorityEvent<EventArgsWithInt>();
     }
-
+    
     protected override IInvocablePriorityEvent<EventArgsWithString> MakeDifferentEventWithPriority()
     {
-        return new ThreadsafePriorityEvent<EventArgsWithString>();
+        return new PriorityEvent<EventArgsWithString>();
     }
 }
-

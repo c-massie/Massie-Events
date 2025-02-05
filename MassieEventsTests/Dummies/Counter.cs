@@ -1,4 +1,4 @@
-namespace MassieEventsTests.Dummies;
+namespace Scot.Massie.Events.Dummies;
 
 public class Counter
 {

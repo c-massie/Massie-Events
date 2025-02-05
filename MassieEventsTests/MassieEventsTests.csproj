@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
+
+        <RootNamespace>Scot.Massie.Events</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using MassieEventsTests.Dummies;
-using Scot.Massie.Events;
 using Scot.Massie.Events.CallInfo;
+using Scot.Massie.Events.Dummies;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MassieEventsTests;
+namespace Scot.Massie.Events;
 
 // ReSharper disable once InconsistentNaming
 public abstract class IInvocablePriorityEventTest : IInvocableEventTest
@@ -311,12 +310,10 @@ public abstract class IInvocablePriorityEventTest : IInvocableEventTest
         e1.Invoke(a);
 
         l.Should().HaveCount(6);
-        var firstTwo = l.Take(2).ToList();
-        firstTwo.Should().Contain("Moot");
-        firstTwo.Should().Contain("Poot");
-        l[2].Should().Be("Toot");
-        l[3].Should().Be("Boot");
-        l[4].Should().Be("Noot");
-        l[5].Should().Be("Hoot");
+        l.Take(2).Should().Contain(new[] { "Moot", "Poot" },
+                                   "\"Moot\" and \"Poot\" should be in the first two positions of "
+                                 + $"{{ {string.Join(", ", l.Select(x => $"\"{x}\""))} }}");
+        
+        l.Skip(2).Should().ContainInOrder("Toot", "Boot", "Noot", "Hoot");
     }
 }
