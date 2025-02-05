@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using JetBrains.Annotations;
 using Scot.Massie.Events.CallInfo;
 using Scot.Massie.Events.Dummies;
 using Xunit;
@@ -9,6 +10,8 @@ using Xunit.Abstractions;
 
 namespace Scot.Massie.Events;
 
+[TestSubject(typeof(IInvocableEvent))]
+[TestSubject(typeof(IInvocableEvent<>))]
 // ReSharper disable once InconsistentNaming
 public abstract class IInvocableEventTest
 {

@@ -1,8 +1,10 @@
+using JetBrains.Annotations;
 using Scot.Massie.Events.Dummies;
 using Xunit.Abstractions;
 
 namespace Scot.Massie.Events.Threadsafe;
 
+[TestSubject(typeof(ThreadsafePriorityEvent<>))]
 public class ThreadsafePriorityEventTest : IInvocablePriorityEventTest
 {
     public ThreadsafePriorityEventTest(ITestOutputHelper output)

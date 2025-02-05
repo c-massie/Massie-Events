@@ -1,8 +1,10 @@
+using JetBrains.Annotations;
 using Scot.Massie.Events.Dummies;
 using Xunit.Abstractions;
 
 namespace Scot.Massie.Events;
 
+[TestSubject(typeof(Event<>))]
 public class EventTest : IInvocableEventTest
 {
     public EventTest(ITestOutputHelper output)
