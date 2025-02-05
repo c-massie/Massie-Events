@@ -20,9 +20,10 @@ namespace Scot.Massie.Events;
 /// </remarks>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
-///  
-/// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;&#40;&#41;;
+/// // or `new ThreadsafeEvent&lt;MyEventArgs&gt;&#40;&#41;;` in a context where thread-safety is required.
+/// 
+/// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = _thingHappened.Protected();
 /// </code>
 ///
 /// This may be invoked with:
@@ -174,9 +175,10 @@ public interface IInvocableEvent : IEvent
 /// </typeparam>
 /// <example>
 /// <code>
-/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt; ();
-///  
-/// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = new ProtectedEvent&lt;MyEventArgs&gt;(_thingHappened);
+/// private readonly IInvocableEvent&lt;MyEventArgs&gt; _thingHappened = new Event&lt;MyEventArgs&gt;&#40;&#41;;
+/// // or `new ThreadsafeEvent&lt;MyEventArgs&gt;&#40;&#41;;` in a context where thread-safety is required.
+/// 
+/// public IEvent&lt;MyEventArgs&gt; ThingHappened { get; } = _thingHappened.Protected();
 /// </code>
 ///
 /// This may be invoked with:

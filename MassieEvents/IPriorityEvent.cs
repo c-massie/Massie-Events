@@ -16,10 +16,10 @@ namespace Scot.Massie.Events;
 /// <example>
 /// <code>
 /// private readonly IInvocablePriorityEvent&lt;MyEventArgs&gt; _thingHappened
-///     = new PriorityEvent&lt;MyEventArgs&gt; ();
+///     = new PriorityEvent&lt;MyEventArgs&gt;&#40;&#41;;
+/// // or `new ThreadsafePriorityEvent&lt;MyEventArgs&gt;&#40;&#41;;` in a context where thread-safety is required.
 ///  
-/// public IPriorityEvent&lt;MyEventArgs&gt; ThingHappened { get; }
-///     = new ProtectedPriorityEvent&lt;MyEventArgs&gt;(_thingHappened);
+/// public IPriorityEvent&lt;MyEventArgs&gt; ThingHappened { get; } = _thingHappened.Protected();
 /// </code>
 ///
 /// This may be listened to with:

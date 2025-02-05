@@ -4,7 +4,7 @@ using Scot.Massie.Events.Threadsafe;
 
 namespace Scot.Massie.Events;
 
-/// <inheritdoc cref="IEvent{TArgs}"/>
+/// <inheritdoc cref="IInvocableEvent{TArgs}"/>
 /// <remarks>
 /// This implementation of <see cref="IEvent{TArgs}"/> is intended to be used in a single-threaded context, and does
 /// nothing to preserve thread safety. If thread safety is required, (i.e. if working in a multi-threaded context) you
